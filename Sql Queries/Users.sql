@@ -1,0 +1,19 @@
+-- First
+CREATE DATABASE TwitterDB;
+
+USE TwitterDB;
+GO
+
+CREATE TABLE Users (
+    UserId INT IDENTITY(1,1),
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL PRIMARY KEY,
+    BirthMonth VARCHAR(25) NOT NULL,
+    BirthDay INT NOT NULL CHECK (BirthDay BETWEEN 1 AND 31),
+    BirthYear INT NOT NULL CHECK (BirthYear BETWEEN 1900 AND YEAR(GETDATE())),
+    Username VARCHAR(100),
+    Password VARCHAR(100)
+);
+GO
+
+-- localhost\SQLEXPRESS
