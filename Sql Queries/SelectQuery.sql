@@ -19,6 +19,10 @@ SELECT * FROM Reports;
 
 SELECT * FROM OtpVerification;
 
+SELECT * FROM ContentModeration
+ORDER BY ModerationId DESC;
+
+
 SELECT * FROM sys.tables;
 
 SELECT *

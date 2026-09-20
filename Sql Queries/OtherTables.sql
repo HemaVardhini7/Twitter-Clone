@@ -64,3 +64,24 @@ CREATE TABLE Reports (
     FOREIGN KEY (ReportedEmail) REFERENCES Users(Email)
 );
 GO
+
+
+
+CREATE TABLE ContentModeration
+(
+    ModerationId INT IDENTITY(1,1) PRIMARY KEY,
+    Email VARCHAR(100) NOT NULL,
+    ContentType VARCHAR(20) NOT NULL,
+    ContentText NVARCHAR(MAX) NOT NULL,
+    Category VARCHAR(50) NOT NULL,
+    IsSafe BIT NOT NULL,
+    Reason NVARCHAR(500) NULL,
+    TweetId INT NULL,
+    CommentId INT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (Email) REFERENCES Users(Email),
+    FOREIGN KEY (TweetId) REFERENCES Tweets(TweetId),
+    FOREIGN KEY (CommentId) REFERENCES Comments(CommentId),
+    CHECK (ContentType IN ('Tweet', 'Comment'))
+);
+GO

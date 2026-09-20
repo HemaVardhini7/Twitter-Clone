@@ -56,6 +56,9 @@
       <HintPath>packages\MimeKit.4.17.0\lib\net47\MimeKit.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
       <Private>True</Private>
@@ -120,6 +123,7 @@
   <ItemGroup>
     <Content Include="AdminDashboard.aspx" />
     <Content Include="AdminLogin.aspx" />
+    <Content Include="ContentSafetyTest.aspx" />
     <Content Include="FirstPage.aspx" />
     <Content Include="HomePage.aspx" />
     <Content Include="LoginForm.aspx" />
@@ -143,6 +147,14 @@
     </Compile>
     <Compile Include="AdminLogin.aspx.designer.cs">
       <DependentUpon>AdminLogin.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AI\ContentSafetyService.cs" />
+    <Compile Include="ContentSafetyTest.aspx.cs">
+      <DependentUpon>ContentSafetyTest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ContentSafetyTest.aspx.designer.cs">
+      <DependentUpon>ContentSafetyTest.aspx</DependentUpon>
     </Compile>
     <Compile Include="Helpers\EmailService.cs" />
     <Compile Include="Helpers\ImageUploadHelper.cs" />

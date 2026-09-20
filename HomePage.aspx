@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="HomePage.aspx.cs" Inherits="EliteTweet.HomePage" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="HomePage.aspx.cs" Async="true" Inherits="EliteTweet.HomePage" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -594,7 +594,42 @@
     .tweet-image-wrap { margin-top: 10px; border-radius: 16px; overflow: hidden; border: 1px solid #2f3336; }
     .tweet-image { width: 100%; display: block; max-height: 500px; object-fit: cover; }
 
+    .alert-tweet {
+    position: relative;
+    padding: 14px 50px 14px 16px;
+}
 
+.alert-message-text {
+    display: block;
+}
+
+.alert-close-btn {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+
+    width: 32px;
+    height: 32px;
+
+    border: none;
+    background: transparent;
+
+    color: inherit;
+    font-size: 24px;
+    line-height: 32px;
+
+    cursor: pointer;
+    z-index: 99999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-close-btn:hover {
+    opacity: 0.6;
+}
 
     </style>
 </head>
@@ -670,7 +705,15 @@
         </div>
 
   
-        <asp:Label ID="lblMessage" runat="server" CssClass="alert-tweet d-block" Visible="false" />
+        <div id="messageContainer" runat="server"
+             class="alert-tweet"
+             visible="false">
+
+            <asp:Label
+                ID="lblMessage"
+                runat="server" />
+
+        </div>
 
  
         <div class="composer-box">
@@ -752,7 +795,7 @@
                         <div class="tweet-text"><%# Eval("TweetText") %></div>
                         <%# RenderTweetImage(Eval("ImagePath")) %>
                         <div class="tweet-actions">
-                            <div class="tweet-action" onclick="openCommentModal('<%# Eval("TweetId") %>')">
+                            <div class="tweet-action" onclick="viewComments('<%# Eval("TweetId") %>'); return false;">
                                 <i class="bi bi-chat"></i>
                                 <span><%# Eval("CommentCount") %></span>
                             </div>
@@ -922,6 +965,8 @@
     <!-- Hidden field to store TweetId for reporting -->
     <asp:HiddenField ID="hdnReportTweetId" runat="server" ClientIDMode="Static" />
 
+    <asp:Button ID="btnViewComments" runat="server" Style="display:none;" OnClick="btnViewComments_Click" />
+
     <!-- Report Modal -->
     <div class="report-modal-overlay" id="reportModalOverlay" onclick="handleReportOverlayClick(event)">
         <div class="report-modal">
@@ -948,28 +993,159 @@
     </div>
         <asp:HiddenField ID="hdnCommentTweetId" runat="server" ClientIDMode="Static" />
 
-    <div class="comment-modal-overlay" id="commentModalOverlay">
-        <div class="comment-modal">
-            <h5 style="color:#fff; margin-bottom:12px;">Reply</h5>
-            <asp:TextBox ID="txtComment" runat="server"
+    <asp:HiddenField
+    ID="HiddenField1"
+    runat="server"
+    ClientIDMode="Static" />
+
+<div class="comment-modal-overlay" id="commentModalOverlay">
+
+    <div class="comment-modal">
+
+        <!-- Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+
+            <h5 style="color:#fff; margin:0;">
+                Replies
+            </h5>
+
+            <button
+                type="button"
+                onclick="closeCommentModal(); return false;"
+                style="
+                    background:none;
+                    border:none;
+                    color:#fff;
+                    font-size:22px;
+                    cursor:pointer;
+                ">
+                &times;
+            </button>
+
+        </div>
+
+
+        <!-- Existing comments -->
+        <div class="comments-list">
+
+            <asp:Repeater
+                ID="rptComments"
+                runat="server">
+
+                <ItemTemplate>
+
+                    <div class="comment-item"
+                         style="
+                            padding:10px 0;
+                            border-bottom:1px solid #2f3336;
+                         ">
+
+                        <div style="display:flex; gap:8px;">
+
+                            <strong style="color:#fff;">
+                                @<%# Eval("Username") %>
+                            </strong>
+
+                        </div>
+
+                        <div style="
+                            color:#e7e9ea;
+                            margin-top:4px;
+                            word-break:break-word;
+                        ">
+
+                            <%# Eval("CommentText") %>
+
+                        </div>
+
+                        <div style="
+                            color:#71767b;
+                            font-size:12px;
+                            margin-top:4px;
+                        ">
+
+                            <%# GetTimeAgo((DateTime)Eval("CreatedAt")) %>
+
+                        </div>
+
+                    </div>
+
+                </ItemTemplate>
+
+            </asp:Repeater>
+
+            <asp:Panel
+                ID="pnlNoComments"
+                runat="server"
+                Visible="false">
+
+                <div style="
+                    color:#71767b;
+                    text-align:center;
+                    padding:20px 0;
+                ">
+
+                    No replies yet. Be the first to reply!
+
+                </div>
+
+            </asp:Panel>
+
+        </div>
+
+
+        <!-- New comment -->
+        <div style="
+            margin-top:15px;
+            border-top:1px solid #2f3336;
+            padding-top:15px;
+        ">
+
+            <asp:TextBox
+                ID="txtComment"
+                runat="server"
                 TextMode="MultiLine"
                 CssClass="modal-textarea"
                 placeholder="Write your reply..."
                 MaxLength="200"
                 Rows="3"
                 ClientIDMode="Static" />
-            <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
-                <button type="button" onclick="closeCommentModal()" 
-                    style="background:none; border:1px solid #536471; color:#fff; padding:8px 16px; border-radius:20px; cursor:pointer;">
+
+            <div style="
+                margin-top:12px;
+                display:flex;
+                gap:8px;
+                justify-content:flex-end;
+            ">
+
+                <button
+                    type="button"
+                    onclick="closeCommentModal(); return false;"
+                    style="
+                        background:none;
+                        border:1px solid #536471;
+                        color:#fff;
+                        padding:8px 16px;
+                        border-radius:20px;
+                        cursor:pointer;
+                    ">
                     Cancel
                 </button>
-                <asp:Button ID="btnSubmitComment" runat="server"
+
+                <asp:Button
+                    ID="btnSubmitComment"
+                    runat="server"
                     Text="Reply"
                     CssClass="btn-post"
                     OnClick="btnSubmitComment_Click" />
+
             </div>
+
         </div>
+
     </div>
+
+</div>
 
     <asp:HiddenField ID="hdnLikeTweetId" runat="server" ClientIDMode="Static" />
     <asp:Button ID="btnSubmitLike" runat="server" Style="display:none;" OnClick="btnSubmitLike_Click" />
@@ -1056,20 +1232,40 @@
     // Enable / disable inline Post button based on textarea
     var inlineTextarea = document.getElementById('txtTweet');
     var inlinePostBtn = document.querySelector('.composer-actions .btn-post');
+
     if (inlineTextarea && inlinePostBtn) {
         inlineTextarea.addEventListener('input', function () {
+
             inlinePostBtn.disabled = this.value.trim().length === 0;
+
+            var message = document.getElementById('messageContainer');
+
+            if (message && this.value.trim().length > 0) {
+                message.style.display = 'none';
+            }
         });
-        inlinePostBtn.disabled = inlineTextarea.value.trim().length === 0;
+
+        inlinePostBtn.disabled =
+            inlineTextarea.value.trim().length === 0;
     }
 
     // Enable / disable modal Post button
     var modalTextarea = document.getElementById('txtModalTweet');
     var modalPostBtn = document.querySelector('#tweetModalBox .btn-post');
+
     if (modalTextarea && modalPostBtn) {
         modalTextarea.addEventListener('input', function () {
-            modalPostBtn.disabled = this.value.trim().length === 0;
+
+            modalPostBtn.disabled =
+                this.value.trim().length === 0;
+
+            var message = document.getElementById('messageContainer');
+
+            if (message && this.value.trim().length > 0) {
+                message.style.display = 'none';
+            }
         });
+
         modalPostBtn.disabled = true;
     }
 
@@ -1080,6 +1276,29 @@
     function closeReportModal() {
         document.getElementById('reportModalOverlay').classList.remove('show');
     }
+
+    function closeAlertMessage(event) {
+
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        var message = document.getElementById('messageContainer');
+
+        if (message) {
+            message.style.display = 'none';
+        }
+
+        return false;
+    }
+
+    function viewComments(tweetId) {
+        document.getElementById('hdnCommentTweetId').value = tweetId;
+        document.getElementById('btnViewComments').click();
+        return false;
+    }
+
     function handleReportOverlayClick(e) {
         if (e.target === document.getElementById('reportModalOverlay')) {
             closeReportModal();

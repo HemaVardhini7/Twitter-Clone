@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.Security;
+using EliteTweet.AI;
 
 namespace EliteTweet
 {
@@ -110,10 +111,10 @@ namespace EliteTweet
 
 
 
-        protected void btnPost_Click(object sender, EventArgs e)
+        protected async void btnPost_Click(object sender, EventArgs e)
         {
-
             string tweetText = txtTweet.Text.Trim();
+
             if (string.IsNullOrEmpty(tweetText))
                 tweetText = txtModalTweet.Text.Trim();
 
@@ -129,8 +130,66 @@ namespace EliteTweet
                 return;
             }
 
+            string email = Session["Email"].ToString();
+
+            // ==========================================
+            // 1. CHECK TWEET WITH GEMINI
+            // ==========================================
+
+            ContentSafetyService service =
+                new ContentSafetyService();
+
+            ModerationResult result =
+                await service.CheckContentAsync(tweetText);
+
+            // Gemini/API failed
+            if (!result.Success)
+            {
+                ShowMessage(
+                    "Content safety check failed. Please try again.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // 2. BLOCK UNSAFE TWEET
+            // ==========================================
+
+            if (!result.IsSafe)
+            {
+                SaveModerationRecord(
+                    email,
+                    "Tweet",
+                    tweetText,
+                    result.Category,
+                    false,
+                    result.Reason,
+                    null,
+                    null
+                );
+
+                // Clear both tweet textboxes
+                txtTweet.Text = "";
+                txtModalTweet.Text = "";
+
+                ShowMessage(
+                    "Your post was blocked because it may violate content safety rules.<br/>" +
+                    "Reason: " + Server.HtmlEncode(result.Reason),
+                    "danger"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // 3. TWEET IS SAFE
+            // ==========================================
+
             string imagePath = null;
 
+            // Upload image only after content is approved
             if (fileUpload.HasFile)
             {
                 try
@@ -138,7 +197,8 @@ namespace EliteTweet
                     imagePath = ImageUploadHelper.SaveTweetImage(
                         fileUpload.PostedFile,
                         Server.MapPath("~/UploadedImages/Tweets/"),
-                        "UploadedImages/Tweets");
+                        "UploadedImages/Tweets"
+                    );
                 }
                 catch (ImageUploadHelper.ImageValidationException ex)
                 {
@@ -147,23 +207,122 @@ namespace EliteTweet
                 }
             }
 
-            string email = Session["Email"].ToString();
+            // ==========================================
+            // 4. INSERT TWEET + MODERATION RECORD
+            // ==========================================
 
-            SqlConnection con = new SqlConnection(strcon);
-            string query = "INSERT INTO Tweets (Email, TweetText, ImagePath, CreatedAt) VALUES (@Email, @TweetText, @ImagePath, GETDATE())";
-            SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@Email", email);
-            cmd.Parameters.AddWithValue("@TweetText", tweetText);
-            cmd.Parameters.AddWithValue("@ImagePath", (object)imagePath ?? DBNull.Value);
+            using (SqlConnection con = new SqlConnection(strcon))
+            {
+                con.Open();
 
-            con.Open();
-            cmd.ExecuteNonQuery();
+                SqlTransaction transaction = con.BeginTransaction();
+
+                try
+                {
+                    string tweetQuery = @"
+                INSERT INTO Tweets
+                    (Email, TweetText, ImagePath, CreatedAt)
+                OUTPUT INSERTED.TweetId
+                VALUES
+                    (@Email, @TweetText, @ImagePath, GETDATE())";
+
+                    using (SqlCommand tweetCmd =
+                        new SqlCommand(tweetQuery, con, transaction))
+                    {
+                        tweetCmd.Parameters.AddWithValue("@Email", email);
+                        tweetCmd.Parameters.AddWithValue("@TweetText", tweetText);
+                        tweetCmd.Parameters.AddWithValue(
+                            "@ImagePath",
+                            (object)imagePath ?? DBNull.Value
+                        );
+
+                        int tweetId =
+                            Convert.ToInt32(tweetCmd.ExecuteScalar());
+
+                        // Save safe moderation record
+                        string moderationQuery = @"
+                    INSERT INTO ContentModeration
+                    (
+                        Email,
+                        ContentType,
+                        ContentText,
+                        Category,
+                        IsSafe,
+                        Reason,
+                        TweetId,
+                        CommentId,
+                        CreatedAt
+                    )
+                    VALUES
+                    (
+                        @Email,
+                        @ContentType,
+                        @ContentText,
+                        @Category,
+                        @IsSafe,
+                        @Reason,
+                        @TweetId,
+                        NULL,
+                        GETDATE()
+                    )";
+
+                        using (SqlCommand moderationCmd =
+                            new SqlCommand(moderationQuery, con, transaction))
+                        {
+                            moderationCmd.Parameters.AddWithValue(
+                                "@Email", email);
+
+                            moderationCmd.Parameters.AddWithValue(
+                                "@ContentType", "Tweet");
+
+                            moderationCmd.Parameters.AddWithValue(
+                                "@ContentText", tweetText);
+
+                            moderationCmd.Parameters.AddWithValue(
+                                "@Category", result.Category);
+
+                            moderationCmd.Parameters.AddWithValue(
+                                "@IsSafe", true);
+
+                            moderationCmd.Parameters.AddWithValue(
+                                "@Reason", result.Reason);
+
+                            moderationCmd.Parameters.AddWithValue(
+                                "@TweetId", tweetId);
+
+                            moderationCmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+
+                    ShowMessage(
+                        "Unable to post your tweet. " +
+                        Server.HtmlEncode(ex.Message),
+                        "danger"
+                    );
+
+                    return;
+                }
+            }
+
+            // ==========================================
+            // 5. CLEAR FORM + REFRESH TWEETS
+            // ==========================================
+
             txtTweet.Text = "";
             txtModalTweet.Text = "";
-            ShowMessage("Your post was sent!", "success");
+
+            ShowMessage(
+                "Your post was sent and passed the content safety check!",
+                "success"
+            );
 
             LoadTweets();
-            con.Close();
         }
 
         protected string RenderTweetImage(object imagePathObj)
@@ -188,12 +347,101 @@ namespace EliteTweet
             return createdAt.ToString("MMM d");
         }
 
+        private void SaveModerationRecord(
+            string email,
+            string contentType,
+            string contentText,
+            string category,
+            bool isSafe,
+            string reason,
+            int? tweetId,
+            int? commentId)
+            {
+                    using (SqlConnection con =
+                        new SqlConnection(strcon))
+                    {
+                        string query = @"
+                    INSERT INTO ContentModeration
+                    (
+                        Email,
+                        ContentType,
+                        ContentText,
+                        Category,
+                        IsSafe,
+                        Reason,
+                        TweetId,
+                        CommentId,
+                        CreatedAt
+                    )
+                    VALUES
+                    (
+                        @Email,
+                        @ContentType,
+                        @ContentText,
+                        @Category,
+                        @IsSafe,
+                        @Reason,
+                        @TweetId,
+                        @CommentId,
+                        GETDATE()
+                    )";
+
+                        using (SqlCommand cmd =
+                            new SqlCommand(query, con))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@Email", email);
+
+                            cmd.Parameters.AddWithValue(
+                                "@ContentType", contentType);
+
+                            cmd.Parameters.AddWithValue(
+                                "@ContentText", contentText);
+
+                            cmd.Parameters.AddWithValue(
+                                "@Category", category);
+
+                            cmd.Parameters.AddWithValue(
+                                "@IsSafe", isSafe);
+
+                            cmd.Parameters.AddWithValue(
+                                "@Reason", reason);
+
+                            cmd.Parameters.AddWithValue(
+                                "@TweetId",
+                                (object)tweetId ?? DBNull.Value);
+
+                            cmd.Parameters.AddWithValue(
+                                "@CommentId",
+                                (object)commentId ?? DBNull.Value);
+
+                            con.Open();
+
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+            }
+
         private void ShowMessage(string text, string type)
         {
-            lblMessage.Text = text;
-            lblMessage.CssClass = $"alert-tweet d-block alert alert-{type}";
-            lblMessage.Visible = true;
+            lblMessage.Text =
+                "<span class=\"alert-message-text\">" +
+                text +
+                "</span>" +
+
+                "<button type=\"button\" " +
+                "class=\"alert-close-btn\" " +
+                "onclick=\"closeAlertMessage(event);\">" +
+                "&times;" +
+                "</button>";
+
+            messageContainer.Attributes["class"] =
+                "alert-tweet alert alert-" + type;
+
+            messageContainer.Visible = true;
         }
+
+
 
         protected void btnSubmitReport_Click(object sender, EventArgs e)
         {
@@ -216,27 +464,254 @@ namespace EliteTweet
             LoadTweets();
         }
 
-        protected void btnSubmitComment_Click(object sender, EventArgs e)
+        protected async void btnSubmitComment_Click(object sender, EventArgs e)
         {
             string email = Session["Email"].ToString();
-            int tweetId = Convert.ToInt32(hdnCommentTweetId.Value);
-            string commentText = txtComment.Text.Trim();
 
-            if (string.IsNullOrEmpty(commentText)) return;
+            int tweetId =
+                Convert.ToInt32(hdnCommentTweetId.Value);
 
-            SqlConnection con = new SqlConnection(strcon);
-            string query = "INSERT INTO Comments (TweetId, Email, CommentText, CreatedAt) " +
-                           "VALUES (@TweetId, @Email, @CommentText, GETDATE())";
-            SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@TweetId", tweetId);
-            cmd.Parameters.AddWithValue("@Email", email);
-            cmd.Parameters.AddWithValue("@CommentText", commentText);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
+            string commentText =
+                txtComment.Text.Trim();
+
+            if (string.IsNullOrEmpty(commentText))
+            {
+                ShowMessage(
+                    "Please write a comment.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // 1. CHECK COMMENT WITH GEMINI
+            // ==========================================
+
+            ContentSafetyService service =
+                new ContentSafetyService();
+
+            ModerationResult result =
+                await service.CheckContentAsync(commentText);
+
+            // Gemini/API failed
+            if (!result.Success)
+            {
+                ShowMessage(
+                    "Content safety check failed. Please try again.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // 2. BLOCK UNSAFE COMMENT
+            // ==========================================
+
+            if (!result.IsSafe)
+            {
+                SaveModerationRecord(
+                    email,
+                    "Comment",
+                    commentText,
+                    result.Category,
+                    false,
+                    result.Reason,
+                    tweetId,
+                    null
+                );
+
+                ShowMessage(
+                    "Your comment was blocked because it may violate content safety rules.<br/>" +
+                    "Reason: " + Server.HtmlEncode(result.Reason),
+                    "danger"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // 3. INSERT SAFE COMMENT
+            // ==========================================
+
+            using (SqlConnection con = new SqlConnection(strcon))
+            {
+                con.Open();
+
+                SqlTransaction transaction =
+                    con.BeginTransaction();
+
+                try
+                {
+                    string commentQuery = @"
+                INSERT INTO Comments
+                    (TweetId, Email, CommentText, CreatedAt)
+                OUTPUT INSERTED.CommentId
+                VALUES
+                    (@TweetId, @Email, @CommentText, GETDATE())";
+
+                    int commentId;
+
+                    using (SqlCommand commentCmd =
+                        new SqlCommand(commentQuery, con, transaction))
+                    {
+                        commentCmd.Parameters.AddWithValue(
+                            "@TweetId", tweetId);
+
+                        commentCmd.Parameters.AddWithValue(
+                            "@Email", email);
+
+                        commentCmd.Parameters.AddWithValue(
+                            "@CommentText", commentText);
+
+                        commentId =
+                            Convert.ToInt32(commentCmd.ExecuteScalar());
+                    }
+
+                    // ==========================================
+                    // 4. SAVE MODERATION RECORD
+                    // ==========================================
+
+                    string moderationQuery = @"
+                INSERT INTO ContentModeration
+                (
+                    Email,
+                    ContentType,
+                    ContentText,
+                    Category,
+                    IsSafe,
+                    Reason,
+                    TweetId,
+                    CommentId,
+                    CreatedAt
+                )
+                VALUES
+                (
+                    @Email,
+                    @ContentType,
+                    @ContentText,
+                    @Category,
+                    @IsSafe,
+                    @Reason,
+                    @TweetId,
+                    @CommentId,
+                    GETDATE()
+                )";
+
+                    using (SqlCommand moderationCmd =
+                        new SqlCommand(moderationQuery, con, transaction))
+                    {
+                        moderationCmd.Parameters.AddWithValue(
+                            "@Email", email);
+
+                        moderationCmd.Parameters.AddWithValue(
+                            "@ContentType", "Comment");
+
+                        moderationCmd.Parameters.AddWithValue(
+                            "@ContentText", commentText);
+
+                        moderationCmd.Parameters.AddWithValue(
+                            "@Category", result.Category);
+
+                        moderationCmd.Parameters.AddWithValue(
+                            "@IsSafe", true);
+
+                        moderationCmd.Parameters.AddWithValue(
+                            "@Reason", result.Reason);
+
+                        moderationCmd.Parameters.AddWithValue(
+                            "@TweetId", tweetId);
+
+                        moderationCmd.Parameters.AddWithValue(
+                            "@CommentId", commentId);
+
+                        moderationCmd.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+
+                    ShowMessage(
+                        "Unable to add your comment. " +
+                        Server.HtmlEncode(ex.Message),
+                        "danger"
+                    );
+
+                    return;
+                }
+            }
 
             txtComment.Text = "";
+
+            ShowMessage(
+                "Comment added and passed the content safety check!",
+                "success"
+            );
+
             LoadTweets();
+        }
+
+        private void LoadComments(int tweetId)
+        {
+            using (SqlConnection con = new SqlConnection(strcon))
+            {
+                string query = @"
+            SELECT
+                c.CommentId,
+                c.CommentText,
+                c.CreatedAt,
+                u.Username
+            FROM Comments c
+            INNER JOIN Users u
+                ON c.Email = u.Email
+            WHERE c.TweetId = @TweetId
+            ORDER BY c.CreatedAt ASC";
+
+                using (SqlCommand cmd =
+                    new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@TweetId",
+                        tweetId
+                    );
+
+                    SqlDataAdapter da =
+                        new SqlDataAdapter(cmd);
+
+                    DataTable dt =
+                        new DataTable();
+
+                    da.Fill(dt);
+
+                    rptComments.DataSource = dt;
+                    rptComments.DataBind();
+
+                    pnlNoComments.Visible =
+                        dt.Rows.Count == 0;
+                }
+            }
+        }
+
+        protected void btnViewComments_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(hdnCommentTweetId.Value))
+                return;
+
+            int tweetId =
+                Convert.ToInt32(hdnCommentTweetId.Value);
+
+            LoadComments(tweetId);
+
+            ClientScript.RegisterStartupScript(
+                this.GetType(),
+                "openComments",
+                "document.getElementById('commentModalOverlay').classList.add('show');",
+                true
+            );
         }
 
         protected void btnSubmitLike_Click(object sender, EventArgs e)
