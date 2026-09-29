@@ -123,10 +123,13 @@
   <ItemGroup>
     <Content Include="AdminDashboard.aspx" />
     <Content Include="AdminLogin.aspx" />
+    <Content Include="Bookmarks.aspx" />
     <Content Include="ContentSafetyTest.aspx" />
+    <Content Include="Explore.aspx" />
     <Content Include="FirstPage.aspx" />
     <Content Include="HomePage.aspx" />
     <Content Include="LoginForm.aspx" />
+    <Content Include="Notifications.aspx" />
     <Content Include="OtpVerification.aspx" />
     <Content Include="ProfilePage.aspx" />
     <Content Include="RegistrationForm.aspx" />
@@ -149,12 +152,26 @@
       <DependentUpon>AdminLogin.aspx</DependentUpon>
     </Compile>
     <Compile Include="AI\ContentSafetyService.cs" />
+    <Compile Include="Bookmarks.aspx.cs">
+      <DependentUpon>Bookmarks.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Bookmarks.aspx.designer.cs">
+      <DependentUpon>Bookmarks.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ContentSafetyTest.aspx.cs">
       <DependentUpon>ContentSafetyTest.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="ContentSafetyTest.aspx.designer.cs">
       <DependentUpon>ContentSafetyTest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Explore.aspx.cs">
+      <DependentUpon>Explore.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Explore.aspx.designer.cs">
+      <DependentUpon>Explore.aspx</DependentUpon>
     </Compile>
     <Compile Include="Helpers\EmailService.cs" />
     <Compile Include="Helpers\ImageUploadHelper.cs" />
@@ -180,6 +197,13 @@
     </Compile>
     <Compile Include="LoginForm.aspx.designer.cs">
       <DependentUpon>LoginForm.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Notifications.aspx.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Notifications.aspx.designer.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
     </Compile>
     <Compile Include="OtpVerification.aspx.cs">
       <DependentUpon>OtpVerification.aspx</DependentUpon>

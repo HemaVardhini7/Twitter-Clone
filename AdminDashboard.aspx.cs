@@ -173,41 +173,46 @@ namespace EliteTweet
             }
         }
 
-        protected void rptTweets_ItemCommand(object source, RepeaterCommandEventArgs e)
+        protected void rptTweets_ItemCommand(
+    object source, RepeaterCommandEventArgs e)
         {
-            if (e.CommandName == "DeleteTweet")
+            if (e.CommandName != "DeleteTweet")
+                return;
+
+            int tweetId = Convert.ToInt32(e.CommandArgument);
+
+            using (SqlConnection con = new SqlConnection(connStr))
             {
-                int tweetId = Convert.ToInt32(e.CommandArgument);
+                con.Open();
 
-                using (SqlConnection con = new SqlConnection(connStr))
+                using (SqlTransaction transaction = con.BeginTransaction())
                 {
-                    con.Open();
-                    SqlCommand cmd = new SqlCommand("", con);
+                    try
+                    {
+                        string query = @"
+                    DELETE FROM Bookmarks WHERE TweetId = @TweetId;
+                    DELETE FROM Reports WHERE ReportedTweetId = @TweetId;
+                    DELETE FROM Likes WHERE TweetId = @TweetId;
+                    DELETE FROM ContentModeration WHERE TweetId = @TweetId;
+                    DELETE FROM Comments WHERE TweetId = @TweetId;
+                    DELETE FROM Retweets WHERE TweetId = @TweetId;
+                    DELETE FROM Tweets WHERE TweetId = @TweetId;
+                ";
 
-                    // Delete related records first
-                    cmd.CommandText = "DELETE FROM Reports WHERE ReportedTweetId = @TweetId";
-                    cmd.Parameters.AddWithValue("@TweetId", tweetId);
-                    cmd.ExecuteNonQuery();
+                        using (SqlCommand cmd =
+                            new SqlCommand(query, con, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@TweetId", tweetId);
+                            cmd.ExecuteNonQuery();
+                        }
 
-                    cmd.CommandText = "DELETE FROM Likes WHERE TweetId = @TweetId";
-                    cmd.Parameters.Clear();
-                    cmd.Parameters.AddWithValue("@TweetId", tweetId);
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "DELETE FROM Comments WHERE TweetId = @TweetId";
-                    cmd.Parameters.Clear();
-                    cmd.Parameters.AddWithValue("@TweetId", tweetId);
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "DELETE FROM Retweets WHERE TweetId = @TweetId";
-                    cmd.Parameters.Clear();
-                    cmd.Parameters.AddWithValue("@TweetId", tweetId);
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "DELETE FROM Tweets WHERE TweetId = @TweetId";
-                    cmd.Parameters.Clear();
-                    cmd.Parameters.AddWithValue("@TweetId", tweetId);
-                    cmd.ExecuteNonQuery();
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
             }
 

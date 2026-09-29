@@ -20,12 +20,12 @@
         }
 
         .page-wrapper {
-            display: flex;
-            justify-content: center;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-
+        display: flex;
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+        align-items: flex-start;
+    }
 
         .left-sidebar {
             width: 275px;
@@ -37,6 +37,15 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .main-profile {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            border-left: 1px solid #2f3336;
+            border-right: 1px solid #2f3336;
         }
 
         .x-logo {
@@ -113,13 +122,13 @@
         .user-info-handle { color: #71767b; font-size: 14px; }
 
 
-        .main-profile {
+/*        .main-profile {
             width: 600px;
             min-height: 100vh;
             border-left: 1px solid #2f3336;
             border-right: 1px solid #2f3336;
         }
-
+*/
 
         .profile-topbar {
             position: sticky;
@@ -152,20 +161,20 @@
 
         .cover-photo {
             width: 100%;
-            height: 200px;
+            height: 170px;
             background: #333639;
             position: relative;
         }
 
         .profile-avatar-wrap {
             position: absolute;
-            bottom: -60px;
+            bottom: -52px;
             left: 16px;
         }
 
         .profile-avatar {
-            width: 120px;
-            height: 120px;
+            width: 105px;
+            height: 105px;
             border-radius: 50%;
             background: #536471;
             border: 4px solid #000;
@@ -197,8 +206,8 @@
         .btn-setup-profile:hover { background: rgba(255,255,255,0.1); }
 
        
-        .profile-info {
-            padding: 60px 16px 12px;
+       .profile-info {
+            padding: 52px 16px 12px;
         }
 
         .profile-name {
@@ -517,13 +526,19 @@
         <div class="x-logo"><i class="bi bi-twitter-x"></i></div>
 
         <a class="nav-item" href="HomePage.aspx"><i class="bi bi-house-fill"></i> Home</a>
-        <a class="nav-item" href="#"><i class="bi bi-search"></i> Explore</a>
-        <a class="nav-item" href="#"><i class="bi bi-bell"></i> Notifications</a>
+        <a class="nav-item" href="Explore.aspx">
+            <i class="bi bi-search"></i> Explore
+        </a>
+            <a class="nav-item" href="Notifications.aspx">
+                <i class="bi bi-bell"></i> Notifications
+            </a>        
         <a class="nav-item" href="#"><i class="bi bi-people"></i> Follow</a>
-        <a class="nav-item" href="#"><i class="bi bi-envelope"></i> Messages</a>
-        <a class="nav-item" href="#"><i class="bi bi-bookmark"></i> Bookmarks</a>
+<%--        <a class="nav-item" href="#"><i class="bi bi-envelope"></i> Messages</a>--%>
+        <a class="nav-item" href="Bookmarks.aspx">
+                <i class="bi bi-bookmark"></i> Bookmarks
+            </a>
         <a class="nav-item active" href="ProfilePage.aspx"><i class="bi bi-person"></i> Profile</a>
-        <a class="nav-item" href="AdminLogin.aspx"><i class="bi bi-shield-check"></i> Admin </a>
+<%--        <a class="nav-item" href="AdminLogin.aspx"><i class="bi bi-shield-check"></i> Admin </a>--%>
         <a class="nav-item" href="FirstPage.aspx"><i class="bi bi-three-dots"></i>LogOut</a>
 
         <button class="btn-post-sidebar" onclick="window.location.href='HomePage.aspx'; return false;">Post</button>
@@ -557,16 +572,61 @@
         </div>
 
         <div class="cover-photo" style="position:relative;">
-            <div class="profile-avatar-wrap">
-                <div class="profile-avatar">
-                    <i class="bi bi-person-fill"></i>
-                </div>
-            </div>
-        </div>
+    <asp:Image ID="imgCover" runat="server"
+        Style="width:100%;height:100%;object-fit:cover;"
+        Visible="false" />
 
-        <div class="profile-actions">
-            <button class="btn-setup-profile">Set up profile</button>
+    <div class="profile-avatar-wrap">
+        <div class="profile-avatar">
+            <asp:Image ID="imgProfile" runat="server"
+                Style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                Visible="false" />
+
+            <asp:Panel ID="pnlDefaultAvatar" runat="server">
+                <i class="bi bi-person-fill"></i>
+            </asp:Panel>
         </div>
+    </div>
+</div>
+
+<div class="profile-actions">
+    <asp:Panel ID="pnlEditProfile" runat="server">
+        <button type="button" class="btn-setup-profile"
+            onclick="document.getElementById('editProfileBox').style.display='block'">
+            Edit profile
+        </button>
+    </asp:Panel>
+
+    <asp:Panel ID="pnlFollowProfile" runat="server" Visible="false">
+        <asp:Button ID="btnProfileFollow" runat="server"
+            CssClass="btn-setup-profile"
+            OnClick="btnProfileFollow_Click" />
+    </asp:Panel>
+</div>
+
+<div id="editProfileBox" style="display:none;padding:20px;border-bottom:1px solid #2f3336;">
+    <h4>Edit profile</h4>
+
+    <p>Profile picture</p>
+    <asp:FileUpload ID="uploadProfile" runat="server" accept="image/*" />
+
+    <p style="margin-top:15px;">Cover photo</p>
+    <asp:FileUpload ID="uploadCover" runat="server" accept="image/*" />
+
+    <p style="margin-top:15px;">Bio</p>
+    <asp:TextBox ID="txtBio" runat="server"
+        TextMode="MultiLine" MaxLength="160"
+        Style="width:100%;background:#202327;color:white;border:1px solid #536471;border-radius:8px;padding:10px;" />
+
+    <asp:Button ID="btnSaveProfile" runat="server"
+        Text="Save changes"
+        CssClass="btn-setup-profile"
+        Style="margin-top:15px;"
+        OnClick="btnSaveProfile_Click" />
+
+    <asp:Label ID="lblProfileMessage" runat="server"
+        Style="display:block;margin-top:10px;" />
+</div>
 
         <div class="profile-info">
             <div class="profile-name">
@@ -575,6 +635,9 @@
             </div>
             <div class="profile-handle">
                 <asp:Label ID="lblUsername" runat="server" />
+            </div>
+            <div style="padding-bottom:12px;">
+                <asp:Label ID="lblBio" runat="server" />
             </div>
             <div class="profile-meta">
                 <i class="bi bi-calendar3"></i>
@@ -615,8 +678,8 @@
         <div class="profile-tabs">
             <div class="profile-tab active" onclick="showTab('posts', this)">Posts</div>
             <div class="profile-tab" onclick="showTab('replies', this)">Replies</div>
-            <div class="profile-tab" onclick="showTab('highlights', this)">Highlights</div>
-            <div class="profile-tab" onclick="showTab('articles', this)">Articles</div>
+<%--            <div class="profile-tab" onclick="showTab('highlights', this)">Highlights</div>
+            <div class="profile-tab" onclick="showTab('articles', this)">Articles</div>--%>
             <div class="profile-tab" onclick="showTab('media', this)">Media</div>
             <div class="profile-tab" onclick="showTab('likes', this)">Likes</div>
         </div>
@@ -691,7 +754,7 @@
         </div>
         <div id="tab-highlights" style="display:none;" class="empty-tab"><h3>No highlights yet</h3><p>Highlights will show here.</p></div>
         <div id="tab-articles"   style="display:none;" class="empty-tab"><h3>No articles yet</h3><p>Articles will show here.</p></div>
-        <div id="tab-media"      style="display:none;" class="empty-tab"><h3>No media yet</h3><p>Photos and videos will show here.</p></div>
+        <div id="tab-media"      style="display:none;" class="empty-tab"><h3>No media yet</h3><p>Photos will show here.</p></div>
         <div id="tab-likes" style="display:none;">
             <asp:Repeater ID="rptLikes" runat="server">
                 <ItemTemplate>
@@ -728,7 +791,7 @@
     </div>
 
     <!-- ════════════ RIGHT SIDEBAR ════════════ -->
-    <div class="right-sidebar">
+    <%--<div class="right-sidebar">
 
         <div class="search-bar">
             <i class="bi bi-search search-icon"></i>
@@ -795,7 +858,7 @@
             <a class="show-more-link">Show more</a>
         </div>
 
-    </div>
+    </div>--%>
 
 </div>
 </form>

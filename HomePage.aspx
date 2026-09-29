@@ -22,12 +22,12 @@
         
         .page-wrapper {
             display: flex;
-            justify-content: center;
+            width: 100%;
             max-width: 1280px;
             margin: 0 auto;
+            align-items: flex-start;
         }
 
-      
         .left-sidebar {
             width: 275px;
             min-height: 100vh;
@@ -38,6 +38,15 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .main-feed {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            border-left: 1px solid #2f3336;
+            border-right: 1px solid #2f3336;
         }
 
         .x-logo {
@@ -120,13 +129,13 @@
             font-size: 14px;
         }
 
-        .main-feed {
+/*        .main-feed {
             width: 600px;
             min-height: 100vh;
             border-left: 1px solid #2f3336;
             border-right: 1px solid #2f3336;
         }
-
+*/
         .feed-header {
             position: sticky;
             top: 0;
@@ -591,8 +600,20 @@
         padding: 20px;
     }
 
-    .tweet-image-wrap { margin-top: 10px; border-radius: 16px; overflow: hidden; border: 1px solid #2f3336; }
-    .tweet-image { width: 100%; display: block; max-height: 500px; object-fit: cover; }
+    .tweet-image-wrap {
+        margin-top: 10px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #2f3336;
+        max-width: 550px;
+    }
+
+    .tweet-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        display: block;
+    }
 
     .alert-tweet {
     position: relative;
@@ -647,27 +668,25 @@
         <a class="nav-item active" href="HomePage.aspx">
             <i class="bi bi-house-fill"></i> Home
         </a>
-        <a class="nav-item" href="#">
+        <a class="nav-item" href="Explore.aspx">
             <i class="bi bi-search"></i> Explore
         </a>
-        <a class="nav-item" href="#">
+        <a class="nav-item" href="Notifications.aspx">
             <i class="bi bi-bell"></i> Notifications
         </a>
         <a class="nav-item" href="#">
             <i class="bi bi-people"></i> Follow
         </a>
-        <a class="nav-item" href="#">
+        <%--<a class="nav-item" href="#">
             <i class="bi bi-envelope"></i> Chat
-        </a>
-        <a class="nav-item" href="#">
+        </a>--%>
+        <a class="nav-item" href="Bookmarks.aspx">
             <i class="bi bi-bookmark"></i> Bookmarks
         </a>
         <a class="nav-item" href="ProfilePage.aspx">
             <i class="bi bi-person"></i> Profile
         </a>
-        <a class="nav-item" href="AdminLogin.aspx">
-            <i class="bi bi-shield-check"></i> Admin 
-        </a>
+        
         <a id="lnkLogout" runat="server" class="nav-item" OnServerClick="lnkLogout_ServerClick">
             <i class="bi bi-three-dots"></i> LogOut
         </a>
@@ -690,7 +709,7 @@
                     <asp:Label ID="lblUsername" runat="server" Text="@username" />
                 </div>
             </div>
-            <i class="bi bi-three-dots" style="color:#71767b;"></i>
+            <%--<i class="bi bi-three-dots" style="color:#71767b;"></i>--%>
         </div>
 
     </div>
@@ -807,12 +826,16 @@
                                 <i class="bi bi-heart"></i>
                                 <span><%# Eval("LikeCount") %></span>
                             </div>
-                            <div class="tweet-action">
+                            <%--<div class="tweet-action">
                                 <i class="bi bi-bar-chart"></i>
                                 <span>0</span>
-                            </div>
-                            <div class="tweet-action">
-                                <i class="bi bi-upload"></i>
+                            </div>--%>
+                            <div class="tweet-action"
+                                 onclick="submitBookmark('<%# Eval("TweetId") %>')"
+                                 title="Bookmark">
+                                <i class='<%# Convert.ToInt32(Eval("IsBookmarked")) == 1
+                                    ? "bi bi-bookmark-fill"
+                                    : "bi bi-bookmark" %>'></i>
                             </div>
                         </div>
                     </div>
@@ -831,7 +854,7 @@
     </div>
 
     <!-- ════════════ RIGHT SIDEBAR ════════════ -->
-    <div class="right-sidebar">
+    <%--<div class="right-sidebar">
 
         <div class="search-bar">
             <i class="bi bi-search search-icon"></i>
@@ -897,7 +920,7 @@
             <a class="show-more-link">Show more</a>
         </div>
 
-    </div>
+    </div>--%>
 
 </div>
 
@@ -1152,10 +1175,17 @@
 
     <asp:HiddenField ID="hdnRepostTweetId" runat="server" ClientIDMode="Static" />
     <asp:Button ID="btnSubmitRepost" runat="server" Style="display:none;" OnClick="btnSubmitRepost_Click" />
+
+    <asp:HiddenField ID="hdnBookmarkTweetId"
+    runat="server" ClientIDMode="Static" />
+
+    <asp:Button ID="btnSubmitBookmark"
+        runat="server"
+        Style="display:none;"
+        OnClick="btnSubmitBookmark_Click" />
 </form>
 
 <script>
- 
     function openTweetModal() {
         document.getElementById('tweetModalOverlay').classList.add('show');
         setTimeout(function () {
@@ -1335,6 +1365,11 @@
     function submitRepost(tweetId) {
         document.getElementById('hdnRepostTweetId').value = tweetId;
         document.getElementById('btnSubmitRepost').click();
+    }
+
+    function submitBookmark(tweetId) {
+        document.getElementById('hdnBookmarkTweetId').value = tweetId;
+        document.getElementById('btnSubmitBookmark').click();
     }
 
 </script>

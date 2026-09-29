@@ -3,6 +3,8 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.UI;
+using System.IO;
+using System.Web;
 
 namespace EliteTweet
 {
@@ -18,6 +20,12 @@ namespace EliteTweet
                 return;
             }
 
+            if (ProfileEmail == null)
+            {
+                Response.Redirect("Explore.aspx");
+                return;
+            }
+
             if (!IsPostBack)
             {
                 LoadProfile();
@@ -29,10 +37,9 @@ namespace EliteTweet
 
         private void LoadProfile()
         {
-            string email = Session["Email"].ToString();
-
+            string email = ProfileEmail;
             SqlConnection con = new SqlConnection(strcon);
-            string query = "SELECT Name, Username, ISNULL(IsVerified, 0) AS IsVerified FROM Users WHERE Email = @Email";
+            string query = "SELECT Name, Username, ISNULL(IsVerified, 0) AS IsVerified, ProfilePicture, CoverPicture, Bio FROM Users WHERE Email = @Email";
             SqlCommand cmd = new SqlCommand(query, con);
             cmd.Parameters.AddWithValue("@Email", email);
 
@@ -57,6 +64,25 @@ namespace EliteTweet
 
                 pnlNotVerified.Visible = !isVerified;
                 pnlVerified.Visible = isVerified;
+                string profilePath = dr["ProfilePicture"].ToString();
+                string coverPath = dr["CoverPicture"].ToString();
+
+                imgProfile.Visible = !string.IsNullOrEmpty(profilePath);
+                pnlDefaultAvatar.Visible = !imgProfile.Visible;
+
+                if (imgProfile.Visible)
+                    imgProfile.ImageUrl = ResolveUrl("~/" + profilePath);
+
+                imgCover.Visible = !string.IsNullOrEmpty(coverPath);
+
+                if (imgCover.Visible)
+                    imgCover.ImageUrl = ResolveUrl("~/" + coverPath);
+
+                lblBio.Text = Server.HtmlEncode(dr["Bio"].ToString());
+                txtBio.Text = dr["Bio"].ToString();
+
+                pnlEditProfile.Visible = IsMyProfile;
+                pnlFollowProfile.Visible = !IsMyProfile;
             }
             con.Close();
 
@@ -70,7 +96,7 @@ namespace EliteTweet
             lblTopPostCount.Text = postCount + " posts";
 
             SqlConnection con3 = new SqlConnection(strcon);
-            SqlCommand cmd3 = new SqlCommand("SELECT COUNT(*) FROM Followers WHERE FollowerEmail = @Email", con3);
+            SqlCommand cmd3 = new SqlCommand("SELECT COUNT(*) FROM Followers WHERE FollowerEmail = @Email AND Status = 'Accepted'", con3);
             cmd3.Parameters.AddWithValue("@Email", email);
             con3.Open();
             int following = (int)cmd3.ExecuteScalar();
@@ -78,18 +104,172 @@ namespace EliteTweet
             lblFollowingCount.Text = following.ToString();
 
             SqlConnection con4 = new SqlConnection(strcon);
-            SqlCommand cmd4 = new SqlCommand("SELECT COUNT(*) FROM Followers WHERE FollowingEmail = @Email", con4);
+            SqlCommand cmd4 = new SqlCommand("SELECT COUNT(*) FROM Followers WHERE FollowingEmail = @Email AND Status = 'Accepted'", con4);
             cmd4.Parameters.AddWithValue("@Email", email);
             con4.Open();
             int followers = (int)cmd4.ExecuteScalar();
             con4.Close();
             lblFollowerCount.Text = followers.ToString();
+            if (!IsMyProfile)
+            {
+                using (SqlConnection followCon = new SqlConnection(strcon))
+                using (SqlCommand followCmd = new SqlCommand(@"
+        SELECT Status FROM Followers
+        WHERE FollowerEmail = @Me
+          AND FollowingEmail = @Target", followCon))
+                {
+                    followCmd.Parameters.AddWithValue(
+                        "@Me", Session["Email"].ToString());
+
+                    followCmd.Parameters.AddWithValue(
+                        "@Target", ProfileEmail);
+
+                    followCon.Open();
+
+                    string status = Convert.ToString(
+                        followCmd.ExecuteScalar());
+
+                    btnProfileFollow.Text =
+                        status == "Pending" ? "Requested" :
+                        status == "Accepted" ? "Following" : "Follow";
+                }
+            }
+
+
         }
+
+
+
+        private string SaveProfileImage(System.Web.UI.WebControls.FileUpload upload)
+        {
+            if (!upload.HasFile)
+                return null;
+
+            string extension = Path.GetExtension(upload.FileName).ToLowerInvariant();
+
+            if (extension != ".jpg" && extension != ".jpeg" &&
+                extension != ".png" && extension != ".webp")
+                throw new InvalidOperationException("Only JPG, PNG and WebP images are allowed.");
+
+            if (upload.PostedFile.ContentLength > 5 * 1024 * 1024)
+                throw new InvalidOperationException("Image must be smaller than 5 MB.");
+
+            string folder = Server.MapPath("~/Uploads/Profiles/");
+            Directory.CreateDirectory(folder);
+
+            string filename = Guid.NewGuid().ToString("N") + extension;
+            string path = Path.Combine(folder, filename);
+
+            // Verify the file is a readable image, not just a renamed file.
+            using (var image = System.Drawing.Image.FromStream(upload.PostedFile.InputStream))
+            {
+                if (image.Width > 8000 || image.Height > 8000)
+                    throw new InvalidOperationException("Image dimensions are too large.");
+            }
+
+            upload.PostedFile.InputStream.Position = 0;
+            upload.SaveAs(path);
+
+            return "Uploads/Profiles/" + filename;
+        }
+
+        protected void btnProfileFollow_Click(object sender, EventArgs e)
+        {
+            if (IsMyProfile || ProfileEmail == null)
+                return;
+
+            using (SqlConnection con = new SqlConnection(strcon))
+            using (SqlCommand cmd = new SqlCommand(@"
+        IF EXISTS (
+            SELECT 1 FROM Followers
+            WHERE FollowerEmail = @Me
+              AND FollowingEmail = @Target
+        )
+            DELETE FROM Followers
+            WHERE FollowerEmail = @Me
+              AND FollowingEmail = @Target;
+        ELSE
+            INSERT INTO Followers (FollowerEmail, FollowingEmail, Status)
+            VALUES (@Me, @Target, 'Pending');", con))
+            {
+                cmd.Parameters.AddWithValue("@Me", Session["Email"].ToString());
+                cmd.Parameters.AddWithValue("@Target", ProfileEmail);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            Response.Redirect(Request.RawUrl);
+        }
+
+        protected void btnSaveProfile_Click(object sender, EventArgs e)
+        {
+            if (!IsMyProfile)
+                return;
+
+            try
+            {
+                string profilePath = SaveProfileImage(uploadProfile);
+                string coverPath = SaveProfileImage(uploadCover);
+
+                using (SqlConnection con = new SqlConnection(strcon))
+                using (SqlCommand cmd = new SqlCommand(@"
+            UPDATE Users
+            SET Bio = @Bio,
+                ProfilePicture = COALESCE(@ProfilePicture, ProfilePicture),
+                CoverPicture = COALESCE(@CoverPicture, CoverPicture)
+            WHERE Email = @Email", con))
+                {
+                    cmd.Parameters.AddWithValue("@Bio", txtBio.Text.Trim());
+                    cmd.Parameters.AddWithValue("@ProfilePicture",
+                        (object)profilePath ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CoverPicture",
+                        (object)coverPath ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Email", Session["Email"].ToString());
+
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+
+                Response.Redirect("ProfilePage.aspx");
+            }
+            catch (Exception ex)
+            {
+                lblProfileMessage.Text =
+                    Server.HtmlEncode(ex.Message);
+            }
+        }
+
+        private string ProfileEmail
+        {
+            get
+            {
+                string username = Request.QueryString["username"];
+
+                if (string.IsNullOrWhiteSpace(username))
+                    return Session["Email"].ToString();
+
+                using (SqlConnection con = new SqlConnection(strcon))
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT Email FROM Users WHERE Username = @Username", con))
+                {
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    con.Open();
+
+                    object result = cmd.ExecuteScalar();
+
+                    return result == null ? null : result.ToString();
+                }
+            }
+        }
+
+        private bool IsMyProfile =>
+            string.Equals(ProfileEmail, Session["Email"].ToString(),
+                StringComparison.OrdinalIgnoreCase);
 
         private void LoadPosts()
         {
-            string email = Session["Email"].ToString();
-
+            string email = ProfileEmail;
             SqlConnection con = new SqlConnection(strcon);
             string query = "SELECT t.TweetId, t.TweetText, t.CreatedAt, u.Name, u.Username, " +
                            "ISNULL(u.IsVerified, 0) AS IsVerified, " +
@@ -118,8 +298,7 @@ namespace EliteTweet
 
         private void LoadLikedTweets()
         {
-            string email = Session["Email"].ToString();
-
+            string email = ProfileEmail;
             SqlConnection con = new SqlConnection(strcon);
             string query = "SELECT t.TweetId, t.TweetText, t.CreatedAt, u.Name, u.Username, " +
                            "ISNULL(u.IsVerified, 0) AS IsVerified, " +
@@ -148,8 +327,7 @@ namespace EliteTweet
         }
         private void LoadReplies()
         {
-            string email = Session["Email"].ToString();
-
+            string email = ProfileEmail;
             SqlConnection con = new SqlConnection(strcon);
             string query = "SELECT c.CommentText, c.CreatedAt, u.Name, u.Username, " +
                "ISNULL(u.IsVerified, 0) AS IsVerified, " +
@@ -158,7 +336,7 @@ namespace EliteTweet
                "INNER JOIN Users u  ON c.Email   = u.Email " +
                "INNER JOIN Tweets t ON c.TweetId = t.TweetId " +
                "INNER JOIN Users tu ON t.Email   = tu.Email " +
-               "WHERE t.Email = @Email " +
+               "WHERE c.Email = @Email " +
                "ORDER BY c.CreatedAt DESC";
 
             SqlCommand cmd = new SqlCommand(query, con);

@@ -79,34 +79,54 @@ namespace EliteTweet
             SqlConnection con = new SqlConnection(strcon);
 
             string query = @"
-                    SELECT 
-                        t.TweetId,
-                        t.TweetText,
-                        t.ImagePath,
-                        t.CreatedAt,
-                        u.Name,
-                        u.Username,
-                        ISNULL(u.IsVerified, 0) AS IsVerified,
-                        (SELECT COUNT(*) FROM Likes    l WHERE l.TweetId = t.TweetId)    AS LikeCount,
-                        (SELECT COUNT(*) FROM Comments c WHERE c.TweetId = t.TweetId)    AS CommentCount,
-                        (SELECT COUNT(*) FROM Retweets r WHERE r.TweetId = t.TweetId)    AS RetweetCount
-                    FROM Tweets t
-                    INNER JOIN Users u ON t.Email = u.Email
-                    ORDER BY t.CreatedAt DESC";
+        SELECT
+            t.TweetId,
+            t.TweetText,
+            t.ImagePath,
+            t.CreatedAt,
+            u.Name,
+            u.Username,
+            ISNULL(u.IsVerified, 0) AS IsVerified,
 
-                SqlCommand cmd = new SqlCommand(query, con);
-                con.Open();
+            (SELECT COUNT(*) FROM Likes l
+             WHERE l.TweetId = t.TweetId) AS LikeCount,
 
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
+            (SELECT COUNT(*) FROM Comments c
+             WHERE c.TweetId = t.TweetId) AS CommentCount,
 
-                rptTweets.DataSource = dt;
-                rptTweets.DataBind();
+            (SELECT COUNT(*) FROM Retweets r
+             WHERE r.TweetId = t.TweetId) AS RetweetCount,
 
-                pnlEmptyFeed.Visible = (dt.Rows.Count == 0);
-                con.Close();
+            CASE WHEN EXISTS (
+                SELECT 1
+                FROM Bookmarks b
+                WHERE b.TweetId = t.TweetId
+                AND b.Email = @Email
+            )
+            THEN 1 ELSE 0 END AS IsBookmarked
 
+        FROM Tweets t
+        INNER JOIN Users u ON t.Email = u.Email
+        ORDER BY t.CreatedAt DESC";
+
+            SqlCommand cmd = new SqlCommand(query, con);
+
+            cmd.Parameters.AddWithValue(
+                "@Email", Session["Email"].ToString()
+            );
+
+            con.Open();
+
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+
+            rptTweets.DataSource = dt;
+            rptTweets.DataBind();
+
+            pnlEmptyFeed.Visible = (dt.Rows.Count == 0);
+
+            con.Close();
         }
 
 
@@ -441,7 +461,53 @@ namespace EliteTweet
             messageContainer.Visible = true;
         }
 
+        protected void btnSubmitBookmark_Click(object sender, EventArgs e)
+{
+    if (Session["Email"] == null)
+    {
+        Response.Redirect("LoginForm.aspx");
+        return;
+    }
 
+    string email = Session["Email"].ToString();
+
+    if (!int.TryParse(hdnBookmarkTweetId.Value, out int tweetId))
+        return;
+
+    using (SqlConnection con = new SqlConnection(strcon))
+    {
+        con.Open();
+
+        string query = @"
+            IF EXISTS (
+                SELECT 1 FROM Bookmarks
+                WHERE TweetId = @TweetId AND Email = @Email
+            )
+            BEGIN
+                DELETE FROM Bookmarks
+                WHERE TweetId = @TweetId AND Email = @Email
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Bookmarks (TweetId, Email)
+                SELECT @TweetId, @Email
+                WHERE EXISTS (
+                    SELECT 1 FROM Tweets
+                    WHERE TweetId = @TweetId
+                )
+            END";
+
+        using (SqlCommand cmd = new SqlCommand(query, con))
+        {
+            cmd.Parameters.Add("@TweetId", SqlDbType.Int).Value = tweetId;
+            cmd.Parameters.Add("@Email", SqlDbType.VarChar, 100).Value = email;
+
+            cmd.ExecuteNonQuery();
+        }
+    }
+
+    LoadTweets();
+}
 
         protected void btnSubmitReport_Click(object sender, EventArgs e)
         {

@@ -51,7 +51,7 @@
          
                 <h4 class="text-center mb-4">Sign in to X</h4>
 
-                <div class="mb-3">
+                <%--<div class="mb-3">
                     <button type="button" class="btn btn-light btn-google w-100 mb-2 d-flex align-items-center justify-content-center">
                     
                         <span class="me-2">
@@ -69,7 +69,7 @@
                         </span>
                         Sign in with Apple
                     </button>
-                </div>
+                </div>--%>
 
             
 

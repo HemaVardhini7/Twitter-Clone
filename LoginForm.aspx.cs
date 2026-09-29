@@ -49,7 +49,7 @@ namespace EliteTweet
                         if (reader.Read())
                         {
                             storedHash = reader["Password"].ToString();
-                            isVerified = Convert.ToBoolean(reader["IsVerified"]);
+                            //isVerified = Convert.ToBoolean(reader["IsVerified"]);
                         }
                     }
                 }
@@ -61,11 +61,11 @@ namespace EliteTweet
                 return;
             }
 
-            if (!isVerified)
-            {
-                lblMessage.Text = "This account hasn't completed email verification. Please register again.";
-                return;
-            }
+            //if (!isVerified)
+            //{
+            //    lblMessage.Text = "This account hasn't completed email verification. Please register again.";
+            //    return;
+            //}
 
             // Password is correct - now require a fresh OTP before logging in.
             OtpService.CreateAndSendOtp(strcon, email, "Login");
