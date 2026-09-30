@@ -21,6 +21,11 @@ CREATE TABLE Likes (
 );
 GO
 
+ALTER TABLE Likes
+ADD LikedAt DATETIME NOT NULL
+    CONSTRAINT DF_Likes_LikedAt DEFAULT GETDATE();
+GO
+
 CREATE TABLE Followers (
     FollowerId INT IDENTITY(1,1) PRIMARY KEY,
     FollowerEmail VARCHAR(100),
@@ -28,6 +33,12 @@ CREATE TABLE Followers (
     FOREIGN KEY (FollowerEmail) REFERENCES Users(Email),
     FOREIGN KEY (FollowingEmail) REFERENCES Users(Email)
 );
+
+GO
+
+ALTER TABLE Followers
+ADD Status VARCHAR(20) NOT NULL
+    CONSTRAINT DF_Followers_Status DEFAULT 'Accepted';
 GO
 
 CREATE TABLE Comments (
@@ -85,3 +96,18 @@ CREATE TABLE ContentModeration
     CHECK (ContentType IN ('Tweet', 'Comment'))
 );
 GO
+
+
+CREATE TABLE Bookmarks (
+    BookmarkId INT IDENTITY(1,1) PRIMARY KEY,
+    TweetId INT NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (TweetId) REFERENCES Tweets(TweetId),
+    FOREIGN KEY (Email) REFERENCES Users(Email),
+
+    CONSTRAINT UQ_Bookmarks UNIQUE (TweetId, Email)
+);
+
+

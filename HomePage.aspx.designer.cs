@@ -51,6 +51,24 @@ namespace EliteTweet
         protected global::System.Web.UI.WebControls.Label lblUsername;
 
         /// <summary>
+        /// btnForYou control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnForYou;
+
+        /// <summary>
+        /// btnFollowing control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnFollowing;
+
+        /// <summary>
         /// messageContainer control.
         /// </summary>
         /// <remarks>

@@ -652,6 +652,12 @@
     opacity: 0.6;
 }
 
+    .feed-tab {
+        text-decoration: none;
+        border: none;
+        background: transparent;
+    }
+
     </style>
 </head>
 <body>
@@ -719,9 +725,18 @@
 
      
         <div class="feed-header">
-            <div class="feed-tab active">For you</div>
-            <div class="feed-tab">Following</div>
-        </div>
+            <asp:LinkButton ID="btnForYou" runat="server"
+                CssClass="feed-tab active"
+                OnClick="btnForYou_Click">
+                For you
+            </asp:LinkButton>
+
+            <asp:LinkButton ID="btnFollowing" runat="server"
+                CssClass="feed-tab"
+                OnClick="btnFollowing_Click">
+                Following
+            </asp:LinkButton>
+    </div>
 
   
         <div id="messageContainer" runat="server"
@@ -763,18 +778,6 @@
                     <div class="composer-icons">
                         <button type="button" class="composer-icon-btn" title="Media" onclick="document.getElementById('fileUpload').click(); return false;">
                             <i class="bi bi-image"></i>
-                        </button>
-                        <button type="button" class="composer-icon-btn" title="GIF">
-                            <i class="bi bi-filetype-gif"></i>
-                        </button>
-                        <button type="button" class="composer-icon-btn" title="Poll">
-                            <i class="bi bi-bar-chart"></i>
-                        </button>
-                        <button type="button" class="composer-icon-btn" title="Emoji">
-                            <i class="bi bi-emoji-smile"></i>
-                        </button>
-                        <button type="button" class="composer-icon-btn" title="Location">
-                            <i class="bi bi-geo-alt"></i>
                         </button>
                     </div>
 
@@ -964,13 +967,9 @@
 
         <div class="modal-actions">
             <div class="modal-icons">
-                <button type="button" class="composer-icon-btn" title="Media" onclick="document.getElementById('fileUploadModal').click(); return false;"><i class="bi bi-image"></i></button>
-                <button type="button" class="composer-icon-btn" title="GIF"><i class="bi bi-filetype-gif"></i></button>
-                <button type="button" class="composer-icon-btn" title="Poll"><i class="bi bi-bar-chart"></i></button>
-                <button type="button" class="composer-icon-btn" title="Emoji"><i class="bi bi-emoji-smile"></i></button>
-                <button type="button" class="composer-icon-btn" title="Schedule"><i class="bi bi-calendar3"></i></button>
-                <button type="button" class="composer-icon-btn" title="Location"><i class="bi bi-geo-alt"></i></button>
-                <button type="button" class="composer-icon-btn" title="Tag"><i class="bi bi-tag"></i></button>
+                <button type="button" class="composer-icon-btn" title="Media" onclick="document.getElementById('fileUploadModal').click(); return false;">
+                    <i class="bi bi-image"></i>
+                </button>
             </div>
 
             <asp:Button

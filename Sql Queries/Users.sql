@@ -16,4 +16,12 @@ CREATE TABLE Users (
 );
 GO
 
+GO
+
+ALTER TABLE Users
+ADD ProfilePicture VARCHAR(300) NULL,
+    CoverPicture VARCHAR(300) NULL,
+    Bio NVARCHAR(160) NULL;
+GO
+
 -- localhost\SQLEXPRESS

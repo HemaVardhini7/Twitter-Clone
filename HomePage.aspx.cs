@@ -41,6 +41,7 @@ namespace EliteTweet
 
             if (!IsPostBack)
             {
+                CurrentFeed = "ForYou";
                 LoadUserInfo();
                 LoadTweets();
             }
@@ -76,60 +77,106 @@ namespace EliteTweet
 
         private void LoadTweets()
         {
-            SqlConnection con = new SqlConnection(strcon);
+            using (SqlConnection con = new SqlConnection(strcon))
+            {
+                string query = @"
+            SELECT
+                t.TweetId,
+                t.TweetText,
+                t.ImagePath,
+                t.CreatedAt,
+                u.Name,
+                u.Username,
+                ISNULL(u.IsVerified, 0) AS IsVerified,
 
-            string query = @"
-        SELECT
-            t.TweetId,
-            t.TweetText,
-            t.ImagePath,
-            t.CreatedAt,
-            u.Name,
-            u.Username,
-            ISNULL(u.IsVerified, 0) AS IsVerified,
+                (SELECT COUNT(*)
+                 FROM Likes l
+                 WHERE l.TweetId = t.TweetId) AS LikeCount,
 
-            (SELECT COUNT(*) FROM Likes l
-             WHERE l.TweetId = t.TweetId) AS LikeCount,
+                (SELECT COUNT(*)
+                 FROM Comments c
+                 WHERE c.TweetId = t.TweetId) AS CommentCount,
 
-            (SELECT COUNT(*) FROM Comments c
-             WHERE c.TweetId = t.TweetId) AS CommentCount,
+                (SELECT COUNT(*)
+                 FROM Retweets r
+                 WHERE r.TweetId = t.TweetId) AS RetweetCount,
 
-            (SELECT COUNT(*) FROM Retweets r
-             WHERE r.TweetId = t.TweetId) AS RetweetCount,
+                CASE WHEN EXISTS (
+                    SELECT 1
+                    FROM Bookmarks b
+                    WHERE b.TweetId = t.TweetId
+                    AND b.Email = @Email
+                )
+                THEN 1 ELSE 0 END AS IsBookmarked
 
-            CASE WHEN EXISTS (
-                SELECT 1
-                FROM Bookmarks b
-                WHERE b.TweetId = t.TweetId
-                AND b.Email = @Email
-            )
-            THEN 1 ELSE 0 END AS IsBookmarked
+            FROM Tweets t
 
-        FROM Tweets t
-        INNER JOIN Users u ON t.Email = u.Email
-        ORDER BY t.CreatedAt DESC";
+            INNER JOIN Users u
+                ON t.Email = u.Email
 
-            SqlCommand cmd = new SqlCommand(query, con);
+            WHERE
+                (
+                    @Feed = 'ForYou'
+                    OR
+                    (
+                        @Feed = 'Following'
+                        AND EXISTS (
+                            SELECT 1
+                            FROM Followers f
+                            WHERE f.FollowerEmail = @Email
+                              AND f.FollowingEmail = t.Email
+                              AND f.Status = 'Accepted'
+                        )
+                    )
+                )
 
-            cmd.Parameters.AddWithValue(
-                "@Email", Session["Email"].ToString()
-            );
+            ORDER BY t.CreatedAt DESC";
 
-            con.Open();
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@Email",
+                        Session["Email"].ToString()
+                    );
 
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
+                    cmd.Parameters.AddWithValue(
+                        "@Feed",
+                        CurrentFeed
+                    );
 
-            rptTweets.DataSource = dt;
-            rptTweets.DataBind();
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
 
-            pnlEmptyFeed.Visible = (dt.Rows.Count == 0);
+                    DataTable dt = new DataTable();
 
-            con.Close();
+                    da.Fill(dt);
+
+                    rptTweets.DataSource = dt;
+                    rptTweets.DataBind();
+
+                    pnlEmptyFeed.Visible = dt.Rows.Count == 0;
+                }
+            }
         }
 
+        protected void btnForYou_Click(object sender, EventArgs e)
+        {
+            CurrentFeed = "ForYou";
 
+            btnForYou.CssClass = "feed-tab active";
+            btnFollowing.CssClass = "feed-tab";
+
+            LoadTweets();
+        }
+
+        protected void btnFollowing_Click(object sender, EventArgs e)
+        {
+            CurrentFeed = "Following";
+
+            btnForYou.CssClass = "feed-tab";
+            btnFollowing.CssClass = "feed-tab active";
+
+            LoadTweets();
+        }
 
         protected async void btnPost_Click(object sender, EventArgs e)
         {
@@ -461,7 +508,7 @@ namespace EliteTweet
             messageContainer.Visible = true;
         }
 
-        protected void btnSubmitBookmark_Click(object sender, EventArgs e)
+protected void btnSubmitBookmark_Click(object sender, EventArgs e)
 {
     if (Session["Email"] == null)
     {
@@ -721,6 +768,17 @@ namespace EliteTweet
             LoadTweets();
         }
 
+        private string CurrentFeed
+        {
+            get
+            {
+                return ViewState["CurrentFeed"]?.ToString() ?? "ForYou";
+            }
+            set
+            {
+                ViewState["CurrentFeed"] = value;
+            }
+        }
         private void LoadComments(int tweetId)
         {
             using (SqlConnection con = new SqlConnection(strcon))
