@@ -45,7 +45,7 @@
 
                     <div class="d-grid gap-3 col-8">
 
-                        <asp:Button 
+                        <%--<asp:Button 
                             ID="btnGoogle" 
                             runat="server" 
                             Text="Sign up with Google" 
@@ -55,7 +55,7 @@
                             ID="btnApple" 
                             runat="server" 
                             Text="Sign up with Apple" 
-                            CssClass="btn btn-light btn-simple" />
+                            CssClass="btn btn-light btn-simple" />--%>
 
                         <hr class="text-secondary" />
 

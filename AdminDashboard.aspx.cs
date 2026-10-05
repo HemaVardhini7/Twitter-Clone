@@ -226,26 +226,38 @@ namespace EliteTweet
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 string query = @"
-                    SELECT ReportId, ReporterEmail, ReportedTweetId, ReportedEmail,
-                           Reason, CreatedAt, Status
-                    FROM Reports
-                    ORDER BY CreatedAt DESC";
+            SELECT 
+                ReportId,
+                ReporterEmail,
+                ReportedTweetId,
+                ReportedEmail,
+                Reason,
+                CreatedAt,
+                Status
+            FROM Reports
+            ORDER BY CreatedAt DESC";
 
-                SqlDataAdapter da = new SqlDataAdapter(query, con);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
 
-                if (dt.Rows.Count == 0)
-                {
-                    pnlNoReports.Visible = true;
-                    rptReports.Visible = false;
-                }
-                else
-                {
-                    pnlNoReports.Visible = false;
-                    rptReports.Visible = true;
-                    rptReports.DataSource = dt;
-                    rptReports.DataBind();
+                        pnlNoReports.Visible = dt.Rows.Count == 0;
+                        rptReports.Visible = dt.Rows.Count > 0;
+
+                        if (dt.Rows.Count > 0)
+                        {
+                            rptReports.DataSource = dt;
+                            rptReports.DataBind();
+                        }
+                        else
+                        {
+                            rptReports.DataSource = null;
+                            rptReports.DataBind();
+                        }
+                    }
                 }
             }
         }

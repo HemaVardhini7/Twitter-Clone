@@ -285,6 +285,24 @@ namespace EliteTweet
         protected global::System.Web.UI.WebControls.Panel pnlNoReplies;
 
         /// <summary>
+        /// rptMedia control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptMedia;
+
+        /// <summary>
+        /// pnlNoMedia control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoMedia;
+
+        /// <summary>
         /// rptLikes control.
         /// </summary>
         /// <remarks>

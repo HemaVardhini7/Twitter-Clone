@@ -515,6 +515,31 @@
         .show-more-link:hover { text-decoration: underline; }
 
         ::-webkit-scrollbar { width: 0px; }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+
+        .media-card {
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .media-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .media-card img:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -752,9 +777,31 @@
                 </div>
             </asp:Panel>
         </div>
-        <div id="tab-highlights" style="display:none;" class="empty-tab"><h3>No highlights yet</h3><p>Highlights will show here.</p></div>
-        <div id="tab-articles"   style="display:none;" class="empty-tab"><h3>No articles yet</h3><p>Articles will show here.</p></div>
-        <div id="tab-media"      style="display:none;" class="empty-tab"><h3>No media yet</h3><p>Photos will show here.</p></div>
+        <%--<div id="tab-highlights" style="display:none;" class="empty-tab"><h3>No highlights yet</h3><p>Highlights will show here.</p></div>
+        <div id="tab-articles"   style="display:none;" class="empty-tab"><h3>No articles yet</h3><p>Articles will show here.</p></div>--%>
+        <div id="tab-media" style="display:none;">
+
+        <div class="media-grid">
+            <asp:Repeater ID="rptMedia" runat="server">
+                <ItemTemplate>
+                    <div class="media-card">
+                        <img src='<%# ResolveUrl("~/" + Eval("ImagePath").ToString()) %>'
+                             alt="Post image"
+                             onclick="window.open(this.src, '_blank');" />
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+        </div>
+
+        <asp:Panel ID="pnlNoMedia" runat="server" Visible="false">
+            <div class="empty-tab">
+                <h3>No media yet</h3>
+                <p>Photos will show here.</p>
+            </div>
+        </asp:Panel>
+
+     </div>  
+
         <div id="tab-likes" style="display:none;">
             <asp:Repeater ID="rptLikes" runat="server">
                 <ItemTemplate>

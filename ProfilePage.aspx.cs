@@ -32,6 +32,7 @@ namespace EliteTweet
                 LoadPosts();
                 LoadLikedTweets();
                 LoadReplies();
+                LoadMedia();
             }
         }
 
@@ -138,7 +139,34 @@ namespace EliteTweet
 
         }
 
+        private void LoadMedia()
+        {
+            string email = ProfileEmail;
 
+            using (SqlConnection con = new SqlConnection(strcon))
+            using (SqlCommand cmd = new SqlCommand(@"
+        SELECT ImagePath
+        FROM Tweets
+        WHERE Email = @Email
+          AND ImagePath IS NOT NULL
+          AND ImagePath <> ''
+        ORDER BY CreatedAt DESC", con))
+            {
+                cmd.Parameters.AddWithValue("@Email", email);
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+
+                con.Open();
+                da.Fill(dt);
+                con.Close();
+
+                rptMedia.DataSource = dt;
+                rptMedia.DataBind();
+
+                pnlNoMedia.Visible = (dt.Rows.Count == 0);
+            }
+        }
 
         private string SaveProfileImage(System.Web.UI.WebControls.FileUpload upload)
         {
