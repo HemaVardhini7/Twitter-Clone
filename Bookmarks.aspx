@@ -25,17 +25,16 @@
         .page-wrapper {
             display: flex;
             width: 100%;
-            max-width: 1260px;
-            margin: 0 auto;
-            justify-content: center;
-            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
 
         /* ─── LEFT SIDEBAR ─── */
         .left-sidebar {
             width: 275px;
             min-height: 100vh;
-            padding: 8px 12px;
+            padding: 12px 16px;
             position: sticky;
             top: 0;
             height: 100vh;
@@ -43,6 +42,7 @@
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
+            border-right: 1px solid #2f3336;
         }
 
         .x-logo {
@@ -119,12 +119,9 @@
 
         /* ─── MAIN COLUMN ─── */
         .main-content {
-            width: 600px;
-            max-width: 600px;
+            flex: 1;
+            min-width: 0;
             min-height: 100vh;
-            border-left: 1px solid #2f3336;
-            border-right: 1px solid #2f3336;
-            flex-shrink: 0;
         }
 
         /* ─── STICKY HEADER ─── */
@@ -271,42 +268,6 @@
         .empty-state h3 { font-size: 24px; font-weight: 800; color: #e7e9ea; margin-bottom: 8px; }
         .empty-state p  { font-size: 15px; margin: 0; }
 
-        /* ─── RIGHT SIDEBAR ─── */
-        .right-sidebar {
-            width: 350px;
-            padding: 12px 16px;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        .sidebar-card {
-            background: #16181c;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .sidebar-card h5 { font-size: 19px; font-weight: 800; margin-bottom: 12px; }
-
-        .trending-item { padding: 10px 0; border-bottom: 1px solid #2f3336; cursor: pointer; }
-        .trending-item:last-child { border-bottom: none; }
-        .trending-item:hover { opacity: 0.8; }
-        .trending-category { font-size: 12px; color: #71767b; }
-        .trending-tag { font-size: 15px; font-weight: 700; }
-        .trending-count { font-size: 12px; color: #71767b; }
-
-        .show-more-link {
-            color: #1d9bf0;
-            font-size: 14px;
-            cursor: pointer;
-            padding-top: 8px;
-            display: block;
-            text-decoration: none;
-        }
-        .show-more-link:hover { text-decoration: underline; }
-
         /* ─── SCROLLBAR HIDE ─── */
         ::-webkit-scrollbar { width: 0; }
     </style>
@@ -393,7 +354,7 @@
                         <div class="tweet-meta">
                             <span class="tweet-name"><%#: Eval("Name") %></span>
                             <span class="tweet-handle">@<%#: Eval("Username") %></span>
-                            <span class="tweet-dot">·</span>
+                            <span class="tweet-dot">&middot;</span>
                             <span class="tweet-time"><%# Eval("CreatedAt", "{0:dd MMM yyyy}") %></span>
                         </div>
 
@@ -438,35 +399,6 @@
                 <p>Don't let the good ones get away. Bookmark posts to easily find them again in the future.</p>
             </div>
         </asp:Panel>
-
-    </div>
-
-    <!-- ═══════════ RIGHT SIDEBAR ═══════════ -->
-    <div class="right-sidebar">
-
-        <div class="sidebar-card">
-            <h5>What's happening</h5>
-
-            <div class="trending-item" onclick="window.location.href='Explore.aspx';">
-                <div class="trending-category">Technology · Trending</div>
-                <div class="trending-tag">#AI2026</div>
-                <div class="trending-count">24.5K posts</div>
-            </div>
-            <div class="trending-item" onclick="window.location.href='Explore.aspx';">
-                <div class="trending-category">Sports · Trending</div>
-                <div class="trending-tag">#IPL2026</div>
-                <div class="trending-count">112.3K posts</div>
-            </div>
-            <div class="trending-item" onclick="window.location.href='Explore.aspx';">
-                <div class="trending-category">Trending in India</div>
-                <div class="trending-tag">#EliteTweet</div>
-                <div class="trending-count">18.9K posts</div>
-            </div>
-        </div>
-
-        <div style="padding:10px 16px 30px;font-size:12px;color:#71767b;line-height:1.6;">
-            Terms of Service &nbsp; Privacy Policy &nbsp; Cookie Policy &nbsp; Accessibility &nbsp; © 2026 EliteTweet, Inc.
-        </div>
 
     </div>
 

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="HomePage.aspx.cs" Async="true" Inherits="EliteTweet.HomePage" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="HomePage.aspx.cs" Async="true" Inherits="EliteTweet.HomePage" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -23,15 +23,15 @@
         .page-wrapper {
             display: flex;
             width: 100%;
-            max-width: 1280px;
-            margin: 0 auto;
-            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
 
         .left-sidebar {
             width: 275px;
             min-height: 100vh;
-            padding: 8px 12px;
+            padding: 12px 16px;
             position: sticky;
             top: 0;
             height: 100vh;
@@ -39,14 +39,13 @@
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
+            border-right: 1px solid #2f3336;
         }
 
         .main-feed {
             flex: 1;
             min-width: 0;
             min-height: 100vh;
-            border-left: 1px solid #2f3336;
-            border-right: 1px solid #2f3336;
         }
 
         .x-logo {
@@ -808,7 +807,7 @@
                             <span class="tweet-name"><%# Eval("Name") %></span>
                             <%# (bool)Eval("IsVerified") ? "<i class=\"bi bi-patch-check-fill verified-badge\"></i>" : "" %>
                             <span class="tweet-handle">@<%# Eval("Username") %></span>
-                            <span class="tweet-dot">·</span>
+                            <span class="tweet-dot">&middot;</span>
                             <span class="tweet-time"><%# GetTimeAgo((DateTime)Eval("CreatedAt")) %></span>
                             <button class="tweet-more" onclick="openReportModal('<%# Eval("TweetId") %>'); return false;">
                                 <i class="bi bi-three-dots"></i>
@@ -855,75 +854,6 @@
         </asp:Panel>
 
     </div>
-
-    <!-- ════════════ RIGHT SIDEBAR ════════════ -->
-    <%--<div class="right-sidebar">
-
-        <div class="search-bar">
-            <i class="bi bi-search search-icon"></i>
-            <input type="text" placeholder="Search" />
-        </div>
-
-  
-        <div class="sidebar-card">
-            <h5>Subscribe to Premium</h5>
-            <p style="font-size:14px;color:#71767b;margin-bottom:12px;">
-                Get verified, boost your replies and unlock extra features.
-            </p>
-            <button class="btn-post" style="padding:10px 20px;">Subscribe</button>
-        </div>
-
-        <div class="sidebar-card">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0">Today's News</h5>
-                <i class="bi bi-x" style="font-size:20px;color:#71767b;cursor:pointer;"></i>
-            </div>
-
-            <div class="news-item">
-                <div class="news-item-title">India's Tech Sector Surges to New Highs in 2026</div>
-                <div class="news-item-meta">2 hours ago · News · 4.1K posts</div>
-            </div>
-            <div class="news-item">
-                <div class="news-item-title">Budget 2026 Highlights: Key announcements for students</div>
-                <div class="news-item-meta">4 hours ago · News · 12.5K posts</div>
-            </div>
-            <div class="news-item">
-                <div class="news-item-title">IPL 2026 Season Opener: RCB vs CSK tonight</div>
-                <div class="news-item-meta">Trending now · Sports · 9.2K posts</div>
-            </div>
-
-            <a class="show-more-link">Show more</a>
-        </div>
-
-
-        <div class="sidebar-card">
-            <h5>What's happening</h5>
-
-            <div class="trending-item">
-                <div class="trending-category">Sports · Trending</div>
-                <div class="trending-tag">#BCCI</div>
-                <div class="trending-count">15.3K posts</div>
-            </div>
-            <div class="trending-item">
-                <div class="trending-category">Trending in India</div>
-                <div class="trending-tag">#MakeInIndia</div>
-                <div class="trending-count">8.7K posts</div>
-            </div>
-            <div class="trending-item">
-                <div class="trending-category">Technology · Trending</div>
-                <div class="trending-tag">#AI2026</div>
-                <div class="trending-count">22.1K posts</div>
-            </div>
-            <div class="trending-item">
-                <div class="trending-category">Trending in India</div>
-                <div class="trending-tag">#Surat</div>
-                <div class="trending-count">3.4K posts</div>
-            </div>
-
-            <a class="show-more-link">Show more</a>
-        </div>
-
-    </div>--%>
 
 </div>
 

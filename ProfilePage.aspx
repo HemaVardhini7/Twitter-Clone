@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ProfilePage.aspx.cs" Inherits="EliteTweet.ProfilePage" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ProfilePage.aspx.cs" Inherits="EliteTweet.ProfilePage" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -20,17 +20,17 @@
         }
 
         .page-wrapper {
-        display: flex;
-        width: 100%;
-        max-width: 1280px;
-        margin: 0 auto;
-        align-items: flex-start;
-    }
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
 
         .left-sidebar {
             width: 275px;
             min-height: 100vh;
-            padding: 8px 12px;
+            padding: 12px 16px;
             position: sticky;
             top: 0;
             height: 100vh;
@@ -38,14 +38,13 @@
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
+            border-right: 1px solid #2f3336;
         }
 
         .main-profile {
             flex: 1;
             min-width: 0;
             min-height: 100vh;
-            border-left: 1px solid #2f3336;
-            border-right: 1px solid #2f3336;
         }
 
         .x-logo {
@@ -121,15 +120,6 @@
         .user-info-name  { font-weight: 700; font-size: 15px; line-height: 1.3; }
         .user-info-handle { color: #71767b; font-size: 14px; }
 
-
-/*        .main-profile {
-            width: 600px;
-            min-height: 100vh;
-            border-left: 1px solid #2f3336;
-            border-right: 1px solid #2f3336;
-        }
-*/
-
         .profile-topbar {
             position: sticky;
             top: 0;
@@ -161,7 +151,7 @@
 
         .cover-photo {
             width: 100%;
-            height: 170px;
+            height: 180px;
             background: #333639;
             position: relative;
         }
@@ -173,8 +163,8 @@
         }
 
         .profile-avatar {
-            width: 105px;
-            height: 105px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             background: #536471;
             border: 4px solid #000;
@@ -183,13 +173,14 @@
             justify-content: center;
             font-size: 52px;
             color: #fff;
+            overflow: hidden;
         }
-
         
         .profile-actions {
             display: flex;
             justify-content: flex-end;
             padding: 12px 16px;
+            min-height: 60px;
         }
 
         .btn-setup-profile {
@@ -197,17 +188,16 @@
             color: #fff;
             border: 1px solid #536471;
             border-radius: 20px;
-            padding: 7px 16px;
+            padding: 7px 18px;
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
         }
         .btn-setup-profile:hover { background: rgba(255,255,255,0.1); }
-
        
-       .profile-info {
-            padding: 52px 16px 12px;
+        .profile-info {
+            padding: 40px 16px 12px;
         }
 
         .profile-name {
@@ -244,7 +234,6 @@
         }
         .follow-counts a:hover { text-decoration: underline; }
         .follow-counts span { color: #71767b; }
-
 
         .verify-banner {
             margin: 12px 16px;
@@ -296,7 +285,6 @@
             transition: background 0.2s;
         }
         .verify-close:hover { background: rgba(255,255,255,0.1); }
-
 
         .verified-banner {
             margin: 12px 16px;
@@ -419,101 +407,6 @@
         }
         .empty-tab h3 { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
 
-        .right-sidebar {
-            width: 350px;
-            padding: 12px 16px;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .search-bar { position: relative; margin-bottom: 16px; }
-        .search-bar input {
-            width: 100%;
-            background: #202327;
-            border: 1px solid transparent;
-            border-radius: 30px;
-            color: #fff;
-            padding: 10px 16px 10px 44px;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s, background 0.2s;
-        }
-        .search-bar input:focus { background: #000; border-color: #1d9bf0; }
-        .search-bar input::placeholder { color: #71767b; }
-        .search-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #71767b;
-            font-size: 17px;
-        }
-
-        .sidebar-card {
-            background: #16181c;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .sidebar-card h5 { font-size: 19px; font-weight: 800; margin-bottom: 12px; }
-
-        .follow-suggestion {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid #2f3336;
-        }
-        .follow-suggestion:last-of-type { border-bottom: none; }
-
-        .suggestion-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: #536471;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .suggestion-info { flex: 1; }
-        .suggestion-name { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
-        .suggestion-handle { font-size: 13px; color: #71767b; }
-
-        .btn-follow {
-            background: #fff;
-            color: #000;
-            border: none;
-            border-radius: 20px;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
-            white-space: nowrap;
-        }
-        .btn-follow:hover { background: #e7e9ea; }
-
-        .trending-item { padding: 10px 0; border-bottom: 1px solid #2f3336; cursor: pointer; }
-        .trending-item:last-child { border-bottom: none; }
-        .trending-item:hover { opacity: 0.8; }
-        .trending-category { font-size: 12px; color: #71767b; }
-        .trending-tag { font-size: 15px; font-weight: 700; }
-        .trending-count { font-size: 12px; color: #71767b; }
-
-        .show-more-link {
-            color: #1d9bf0;
-            font-size: 14px;
-            cursor: pointer;
-            padding-top: 8px;
-            display: block;
-        }
-        .show-more-link:hover { text-decoration: underline; }
-
         ::-webkit-scrollbar { width: 0px; }
 
         .media-grid {
@@ -554,17 +447,15 @@
         <a class="nav-item" href="Explore.aspx">
             <i class="bi bi-search"></i> Explore
         </a>
-            <a class="nav-item" href="Notifications.aspx">
-                <i class="bi bi-bell"></i> Notifications
-            </a>        
+        <a class="nav-item" href="Notifications.aspx">
+            <i class="bi bi-bell"></i> Notifications
+        </a>        
         <a class="nav-item" href="#"><i class="bi bi-people"></i> Follow</a>
-<%--        <a class="nav-item" href="#"><i class="bi bi-envelope"></i> Messages</a>--%>
         <a class="nav-item" href="Bookmarks.aspx">
-                <i class="bi bi-bookmark"></i> Bookmarks
-            </a>
+            <i class="bi bi-bookmark"></i> Bookmarks
+        </a>
         <a class="nav-item active" href="ProfilePage.aspx"><i class="bi bi-person"></i> Profile</a>
-<%--        <a class="nav-item" href="AdminLogin.aspx"><i class="bi bi-shield-check"></i> Admin </a>--%>
-        <a class="nav-item" href="FirstPage.aspx"><i class="bi bi-three-dots"></i>LogOut</a>
+        <a class="nav-item" href="FirstPage.aspx"><i class="bi bi-box-arrow-right"></i> Log out</a>
 
         <button class="btn-post-sidebar" onclick="window.location.href='HomePage.aspx'; return false;">Post</button>
 
@@ -597,61 +488,61 @@
         </div>
 
         <div class="cover-photo" style="position:relative;">
-    <asp:Image ID="imgCover" runat="server"
-        Style="width:100%;height:100%;object-fit:cover;"
-        Visible="false" />
-
-    <div class="profile-avatar-wrap">
-        <div class="profile-avatar">
-            <asp:Image ID="imgProfile" runat="server"
-                Style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+            <asp:Image ID="imgCover" runat="server"
+                Style="width:100%;height:100%;object-fit:cover;"
                 Visible="false" />
 
-            <asp:Panel ID="pnlDefaultAvatar" runat="server">
-                <i class="bi bi-person-fill"></i>
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar">
+                    <asp:Image ID="imgProfile" runat="server"
+                        Style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                        Visible="false" />
+
+                    <asp:Panel ID="pnlDefaultAvatar" runat="server">
+                        <i class="bi bi-person-fill"></i>
+                    </asp:Panel>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <asp:Panel ID="pnlEditProfile" runat="server">
+                <button type="button" class="btn-setup-profile"
+                    onclick="document.getElementById('editProfileBox').style.display='block'">
+                    Edit profile
+                </button>
+            </asp:Panel>
+
+            <asp:Panel ID="pnlFollowProfile" runat="server" Visible="false">
+                <asp:Button ID="btnProfileFollow" runat="server"
+                    CssClass="btn-setup-profile"
+                    OnClick="btnProfileFollow_Click" />
             </asp:Panel>
         </div>
-    </div>
-</div>
 
-<div class="profile-actions">
-    <asp:Panel ID="pnlEditProfile" runat="server">
-        <button type="button" class="btn-setup-profile"
-            onclick="document.getElementById('editProfileBox').style.display='block'">
-            Edit profile
-        </button>
-    </asp:Panel>
+        <div id="editProfileBox" style="display:none;padding:20px;border-bottom:1px solid #2f3336;">
+            <h4>Edit profile</h4>
 
-    <asp:Panel ID="pnlFollowProfile" runat="server" Visible="false">
-        <asp:Button ID="btnProfileFollow" runat="server"
-            CssClass="btn-setup-profile"
-            OnClick="btnProfileFollow_Click" />
-    </asp:Panel>
-</div>
+            <p>Profile picture</p>
+            <asp:FileUpload ID="uploadProfile" runat="server" accept="image/*" />
 
-<div id="editProfileBox" style="display:none;padding:20px;border-bottom:1px solid #2f3336;">
-    <h4>Edit profile</h4>
+            <p style="margin-top:15px;">Cover photo</p>
+            <asp:FileUpload ID="uploadCover" runat="server" accept="image/*" />
 
-    <p>Profile picture</p>
-    <asp:FileUpload ID="uploadProfile" runat="server" accept="image/*" />
+            <p style="margin-top:15px;">Bio</p>
+            <asp:TextBox ID="txtBio" runat="server"
+                TextMode="MultiLine" MaxLength="160"
+                Style="width:100%;background:#202327;color:white;border:1px solid #536471;border-radius:8px;padding:10px;" />
 
-    <p style="margin-top:15px;">Cover photo</p>
-    <asp:FileUpload ID="uploadCover" runat="server" accept="image/*" />
+            <asp:Button ID="btnSaveProfile" runat="server"
+                Text="Save changes"
+                CssClass="btn-setup-profile"
+                Style="margin-top:15px;"
+                OnClick="btnSaveProfile_Click" />
 
-    <p style="margin-top:15px;">Bio</p>
-    <asp:TextBox ID="txtBio" runat="server"
-        TextMode="MultiLine" MaxLength="160"
-        Style="width:100%;background:#202327;color:white;border:1px solid #536471;border-radius:8px;padding:10px;" />
-
-    <asp:Button ID="btnSaveProfile" runat="server"
-        Text="Save changes"
-        CssClass="btn-setup-profile"
-        Style="margin-top:15px;"
-        OnClick="btnSaveProfile_Click" />
-
-    <asp:Label ID="lblProfileMessage" runat="server"
-        Style="display:block;margin-top:10px;" />
-</div>
+            <asp:Label ID="lblProfileMessage" runat="server"
+                Style="display:block;margin-top:10px;" />
+        </div>
 
         <div class="profile-info">
             <div class="profile-name">
@@ -699,16 +590,12 @@
             <span>Verified account</span>
         </asp:Panel>
 
-    
         <div class="profile-tabs">
             <div class="profile-tab active" onclick="showTab('posts', this)">Posts</div>
             <div class="profile-tab" onclick="showTab('replies', this)">Replies</div>
-<%--            <div class="profile-tab" onclick="showTab('highlights', this)">Highlights</div>
-            <div class="profile-tab" onclick="showTab('articles', this)">Articles</div>--%>
             <div class="profile-tab" onclick="showTab('media', this)">Media</div>
             <div class="profile-tab" onclick="showTab('likes', this)">Likes</div>
         </div>
-         
 
         <div id="tab-posts">
             <asp:Repeater ID="rptPosts" runat="server">
@@ -720,7 +607,7 @@
                                 <span class="tweet-name"><%# Eval("Name") %></span>
                                 <%# Convert.ToBoolean(Eval("IsVerified")) ? "<i class=\"bi bi-patch-check-fill\" style=\"color:#1d9bf0;\"></i>" : "" %>
                                 <span class="tweet-handle">@<%# Eval("Username") %></span>
-                                <span class="tweet-dot">·</span>
+                                <span class="tweet-dot">&middot;</span>
                                 <span class="tweet-time"><%# Eval("CreatedAt") %></span>
                                 <button class="tweet-more"><i class="bi bi-three-dots"></i></button>
                             </div>
@@ -745,7 +632,6 @@
             </asp:Panel>
         </div>
 
-       
         <div id="tab-replies" style="display:none;">
             <asp:Repeater ID="rptReplies" runat="server">
                 <ItemTemplate>
@@ -756,7 +642,7 @@
                                 <span class="tweet-name"><%# Eval("Name") %></span>
                                 <%# Convert.ToBoolean(Eval("IsVerified")) ? "<i class=\"bi bi-patch-check-fill\" style=\"color:#1d9bf0;\"></i>" : "" %>
                                 <span class="tweet-handle">@<%# Eval("Username") %></span>
-                                <span class="tweet-dot">·</span>
+                                <span class="tweet-dot">&middot;</span>
                                 <span class="tweet-time"><%# Eval("CreatedAt") %></span>
                             </div>
                             <div class="tweet-text" style="color:#71767b; font-size:13px; margin-bottom:4px;">
@@ -777,30 +663,27 @@
                 </div>
             </asp:Panel>
         </div>
-        <%--<div id="tab-highlights" style="display:none;" class="empty-tab"><h3>No highlights yet</h3><p>Highlights will show here.</p></div>
-        <div id="tab-articles"   style="display:none;" class="empty-tab"><h3>No articles yet</h3><p>Articles will show here.</p></div>--%>
+
         <div id="tab-media" style="display:none;">
-
-        <div class="media-grid">
-            <asp:Repeater ID="rptMedia" runat="server">
-                <ItemTemplate>
-                    <div class="media-card">
-                        <img src='<%# ResolveUrl("~/" + Eval("ImagePath").ToString()) %>'
-                             alt="Post image"
-                             onclick="window.open(this.src, '_blank');" />
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
-        </div>
-
-        <asp:Panel ID="pnlNoMedia" runat="server" Visible="false">
-            <div class="empty-tab">
-                <h3>No media yet</h3>
-                <p>Photos will show here.</p>
+            <div class="media-grid">
+                <asp:Repeater ID="rptMedia" runat="server">
+                    <ItemTemplate>
+                        <div class="media-card">
+                            <img src='<%# ResolveUrl("~/" + Eval("ImagePath").ToString()) %>'
+                                 alt="Post image"
+                                 onclick="window.open(this.src, '_blank');" />
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
             </div>
-        </asp:Panel>
 
-     </div>  
+            <asp:Panel ID="pnlNoMedia" runat="server" Visible="false">
+                <div class="empty-tab">
+                    <h3>No media yet</h3>
+                    <p>Photos will show here.</p>
+                </div>
+            </asp:Panel>
+        </div>  
 
         <div id="tab-likes" style="display:none;">
             <asp:Repeater ID="rptLikes" runat="server">
@@ -812,7 +695,7 @@
                                 <span class="tweet-name"><%# Eval("Name") %></span>
                                 <%# Convert.ToBoolean(Eval("IsVerified")) ? "<i class=\"bi bi-patch-check-fill\" style=\"color:#1d9bf0;\"></i>" : "" %>
                                 <span class="tweet-handle">@<%# Eval("Username") %></span>
-                                <span class="tweet-dot">·</span>
+                                <span class="tweet-dot">&middot;</span>
                                 <span class="tweet-time"><%# Eval("CreatedAt") %></span>
                             </div>
                             <div class="tweet-text"><%# Eval("TweetText") %></div>
@@ -837,91 +720,18 @@
 
     </div>
 
-    <!-- ════════════ RIGHT SIDEBAR ════════════ -->
-    <%--<div class="right-sidebar">
-
-        <div class="search-bar">
-            <i class="bi bi-search search-icon"></i>
-            <input type="text" placeholder="Search" />
-        </div>
-
-        
-        <div class="sidebar-card">
-            <h5>You might like</h5>
-
-            <div class="follow-suggestion">
-                <div class="suggestion-avatar"><i class="bi bi-person-fill"></i></div>
-                <div class="suggestion-info">
-                    <div class="suggestion-name">AajTak <i class="bi bi-patch-check-fill" style="color:#1d9bf0;font-size:13px;"></i></div>
-                    <div class="suggestion-handle">@aajtak</div>
-                </div>
-                <button class="btn-follow">Follow</button>
-            </div>
-
-            <div class="follow-suggestion">
-                <div class="suggestion-avatar"><i class="bi bi-person-fill"></i></div>
-                <div class="suggestion-info">
-                    <div class="suggestion-name">Ministry of Education <i class="bi bi-patch-check-fill" style="color:#1d9bf0;font-size:13px;"></i></div>
-                    <div class="suggestion-handle">@EduMinOfIndia</div>
-                </div>
-                <button class="btn-follow">Follow</button>
-            </div>
-
-            <div class="follow-suggestion">
-                <div class="suggestion-avatar"><i class="bi bi-person-fill"></i></div>
-                <div class="suggestion-info">
-                    <div class="suggestion-name">Sony Music South <i class="bi bi-patch-check-fill" style="color:#1d9bf0;font-size:13px;"></i></div>
-                    <div class="suggestion-handle">@SonyMusicSouth</div>
-                </div>
-                <button class="btn-follow">Follow</button>
-            </div>
-
-            <a class="show-more-link">Show more</a>
-        </div>
-
-        
-        <div class="sidebar-card">
-            <h5>What's happening</h5>
-            <div class="trending-item">
-                <div class="trending-category">Trending in India</div>
-                <div class="trending-tag">#IranUSWar</div>
-                <div class="trending-count">18.4K posts</div>
-            </div>
-            <div class="trending-item">
-                <div class="trending-category">Sports · Trending</div>
-                <div class="trending-tag">#BCCI</div>
-                <div class="trending-count">15.3K posts</div>
-            </div>
-            <div class="trending-item">
-                <div class="trending-category">Trending in India</div>
-                <div class="trending-tag">#MakeInIndia</div>
-                <div class="trending-count">8.7K posts</div>
-            </div>
-            <div class="trending-item">
-                <div class="trending-category">Technology · Trending</div>
-                <div class="trending-tag">#AI2026</div>
-                <div class="trending-count">22.1K posts</div>
-            </div>
-            <a class="show-more-link">Show more</a>
-        </div>
-
-    </div>--%>
-
 </div>
 </form>
 
 <script>
     function showTab(tabName, el) {
-        // Hide all tab content
         ['posts', 'replies', 'highlights', 'articles', 'media', 'likes'].forEach(function (t) {
             var el = document.getElementById('tab-' + t);
             if (el) el.style.display = 'none';
         });
-        // Remove active from all tabs
         document.querySelectorAll('.profile-tab').forEach(function (t) {
             t.classList.remove('active');
         });
-        // Show selected
         document.getElementById('tab-' + tabName).style.display = 'block';
         el.classList.add('active');
     }
