@@ -1,124 +1,209 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="LoginForm.aspx.cs" Inherits="EliteTweet.LoginForm" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="LoginForm.aspx.cs" Inherits="EliteTweet.LoginForm" %>
 
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Sign in to TwitterClone</title>
-    
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-          crossorigin="anonymous" />
-
+    <title>Sign in / EliteTweet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <style>
-      
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: black;
+            background: #000;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
         }
 
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+        }
 
-        .signin-card {
-            background-color: #141414;
+        /* Logo */
+        .auth-logo {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 32px;
             color: #fff;
-            border-radius: 15px;
         }
 
-        .signin-card label,
-        .signin-card .form-label {
-            color: #8899a6;
+        .auth-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 28px;
+            line-height: 1.2;
         }
 
-        .signin-card .btn-google,
-        .signin-card .btn-apple {
-            text-align: left;
+        /* ── Floating-label input ── */
+        .tw-field {
+            position: relative;
+            margin-bottom: 20px;
         }
 
-        
-        .divider-text {
-            color: #8899a6;
-            font-size: 0.9rem;
+        .tw-input {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: 1px solid #333639;
+            border-radius: 4px;
+            color: #e7e9ea;
+            font-size: 17px;
+            padding: 22px 12px 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .tw-input:focus { border-color: #1d9bf0; }
+        .tw-input::placeholder { color: transparent; }
+
+        .tw-label {
+            position: absolute;
+            top: 16px;
+            left: 12px;
+            color: #71767b;
+            font-size: 17px;
+            transition: 0.15s ease all;
+            pointer-events: none;
+        }
+        .tw-input:focus ~ .tw-label,
+        .tw-input.filled ~ .tw-label {
+            top: 6px;
+            font-size: 11px;
+            color: #1d9bf0;
+        }
+
+        /* ── Buttons ── */
+        .btn-blue {
+            display: block;
+            width: 100%;
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            border-radius: 9999px;
+            font-size: 17px;
+            font-weight: 700;
+            padding: 14px;
+            cursor: pointer;
+            margin-bottom: 14px;
+            transition: background 0.2s;
+            text-align: center;
+        }
+        .btn-blue:hover { background: #1a8cd8; }
+
+        /* ── Divider ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #71767b;
+            font-size: 14px;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-top: 1px solid #2f3336;
+        }
+
+        /* ── Links ── */
+        .forgot-link {
+            display: block;
+            text-align: right;
+            color: #1d9bf0;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        .forgot-link:hover { text-decoration: underline; color: #1d9bf0; }
+
+        .auth-footer {
+            margin-top: 24px;
+            font-size: 15px;
+            color: #71767b;
+            text-align: center;
+        }
+
+        .auth-link {
+            color: #1d9bf0;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .auth-link:hover { text-decoration: underline; color: #1d9bf0; }
+
+        /* ── Message ── */
+        .msg {
+            display: block;
+            text-align: center;
+            font-size: 14px;
+            color: #f4212e;
+            margin-bottom: 12px;
+            min-height: 1.2em;
         }
     </style>
 </head>
 <body>
-    <form id="form1" runat="server">
-        
-        <div class="container d-flex justify-content-center align-items-center min-vh-100">
-            <div class="card signin-card p-4 shadow" style="max-width: 380px; width: 100%;">
+<form id="form1" runat="server">
+<div class="auth-box">
 
-         
-                <h4 class="text-center mb-4">Sign in to X</h4>
+    <!-- Logo -->
+    <div class="auth-logo">
+        <i class="bi bi-twitter-x"></i>
+    </div>
 
-                <%--<div class="mb-3">
-                    <button type="button" class="btn btn-light btn-google w-100 mb-2 d-flex align-items-center justify-content-center">
-                    
-                        <span class="me-2">
-                            <img src="google-logo.png" alt="Google" width="20" height="20" class="object-fit-fill" />
-                        </span>
-                        Sign in with Google
-                    </button>
-                </div>
+    <h2 class="auth-title">Sign in to EliteTweet</h2>
 
-               
-                <div class="mb-3">
-                    <button type="button" class="btn btn-light btn-apple w-100 d-flex align-items-center justify-content-center">
-                        <span class="me-2">
-                            <img src="apple-logo.png" alt="Apple" width="20" height="20" />
-                        </span>
-                        Sign in with Apple
-                    </button>
-                </div>--%>
+    <!-- Email -->
+    <div class="tw-field">
+        <asp:TextBox ID="txtUserEmail" runat="server"
+            CssClass="tw-input"
+            placeholder=" " />
+        <label class="tw-label">Email or username</label>
+    </div>
 
-            
+    <!-- Password -->
+    <div class="tw-field">
+        <asp:TextBox ID="txtPassword" runat="server"
+            CssClass="tw-input"
+            TextMode="Password"
+            placeholder=" " />
+        <label class="tw-label">Password</label>
+    </div>
 
-                <div class="mb-3">
-                    <label>Email</label>
-                    <asp:TextBox ID="txtUserEmail" runat="server"
-                        CssClass="form-control"
-                        placeholder="Phone, email, or username" />
-                </div>
+    <a href="#" class="forgot-link">Forgot password?</a>
 
-                <div class="mb-4">
-                    <label>Password</label>
-                    <div class="input-group">
-                        <%--<span class="input-group-text bg-black text-secondary border-secondary">@</span>--%>
+    <!-- Error message -->
+    <asp:Label ID="lblMessage" runat="server" CssClass="msg" />
 
-                        <asp:TextBox
-                            ID="txtPassword"
-                            runat="server"
-                            CssClass="form-control"
-                            Placeholder="Password">
-                        </asp:TextBox>
-                    </div>
-                </div>
+    <!-- Sign In button -->
+    <asp:Button ID="btn_SignIn" runat="server"
+        Text="Sign in"
+        CssClass="btn-blue"
+        OnClick="Login_btn_Click" />
 
+    <div class="divider">or</div>
 
-                <div class="d-grid mb-2">
-                    <asp:Button ID="btn_SignIn" runat="server"
-                        Text="Sign In"
-                        CssClass="btn btn-primary" OnClick="Login_btn_Click" />
-                </div>
+    <div class="auth-footer">
+        Don't have an account?
+        <a href="RegistrationForm.aspx" class="auth-link">Sign up</a>
+    </div>
 
-                <asp:Label ID="lblMessage" runat="server" CssClass="text-warning d-block text-center mb-2" />
+</div>
+</form>
 
-            
-                <div class="text-center">
-                    <a href="#" class="text-white small">Forgot password?</a>
-                </div>
-
-                <div class="text-center mt-3 small">
-                    Don’t have an account? <a href="RegistrationForm.aspx" class="text-white">Sign up</a>
-                </div>
-
-            </div>
-        </div>
-    </form>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
-
+<script>
+    // Floating label — mark input as filled when it has a value
+    document.querySelectorAll('.tw-input').forEach(function (inp) {
+        function upd() { inp.classList.toggle('filled', inp.value.length > 0); }
+        inp.addEventListener('input', upd);
+        upd();
+    });
+</script>
 </body>
 </html>
